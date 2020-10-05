@@ -35,16 +35,36 @@ module.exports = {
         return sendPronostiqueur(user, i);
     },
     getLeaderboard: async function (user) {
-        const sheet = await getSheet();
-        let i=3;
-        const leaderboard = [];
-        while (sheet.sheets[0].data[0].rowData[i] && sheet.sheets[0].data[0].rowData[i].values[0].formattedValue) {
-            leaderboard.push([[sheet.sheets[0].data[0].rowData[i].values[0].formattedValue],
-                [sheet.sheets[0].data[0].rowData[i].values[1].formattedValue]]);
-            i++;
-        }
+
+        const leaderboard = await getAllUsersLeaderboard();
         return getBestPronostiqueur(leaderboard);
     },
+    getRanking: async function (user) {
+        const leaderboard = await getAllUsersLeaderboard();
+        return getSpecificPronostiqueur(leaderboard, user);
+    }
+}
+
+async function getSpecificPronostiqueur(leaderboard, user) {
+    leaderboard.sort(function(a, b){return parseFloat(a[1]) - parseFloat(b[1])}).reverse();
+    let i=0;
+    for (i; i<leaderboard.length; i++) {
+        if (leaderboard[i][0][0] === user.tag) {
+            return "" + user.toString() + " - **Classement** : " + (i+1) + " - **Points** : " + leaderboard[i][1];
+        }
+    }
+    return "Vous n'êtes pas pronostiqueur"
+}
+async function getAllUsersLeaderboard() {
+    const leaderboard = []
+    const sheet = await getSheet();
+    let i=3;
+    while (sheet.sheets[0].data[0].rowData[i] && sheet.sheets[0].data[0].rowData[i].values[0].formattedValue) {
+        leaderboard.push([[sheet.sheets[0].data[0].rowData[i].values[0].formattedValue],
+            [sheet.sheets[0].data[0].rowData[i].values[1].formattedValue]]);
+        i++;
+    }
+    return leaderboard;
 }
 
 async function getBestPronostiqueur(leaderboard) {

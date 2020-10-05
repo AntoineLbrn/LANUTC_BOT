@@ -15,6 +15,7 @@ bot.on('ready', () => {
     console.log('I am ready!');
 });
 
+//TODO: implementer un rappel
 bot.on('message', async message => {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
@@ -54,6 +55,10 @@ bot.on('message', async message => {
                     await Api.getLeaderboard()
                 )
                 break;
+            case 'rank':
+                message.channel.send(
+                    await Api.getRanking(message.author)
+                )
         }
     }
 })
@@ -109,6 +114,9 @@ bot.on('messageReactionAdd', (reaction, user) => {
                 }
             });
         }
+        message.channel.messages.fetch(message.id).then( messageEmbed => {
+            messageEmbed.reactions.resolve(reaction).users.remove(user);
+        });
     }
 });
 
