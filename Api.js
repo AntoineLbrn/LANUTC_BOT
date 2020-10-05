@@ -1,11 +1,12 @@
 var request = require('request');
 var logger = require('winston');
 const fetch = require("node-fetch");
+const property = require('./property.json');
+
 var TOKEN = null;
 
 const MATCH_DAY_LINE_INDEX = 0
 const TEAM_NAME_LINE_INDEX = 1
-const SHEET_ID = "1dXYOoyGGjX0FBJA4fahAPzNM6mLY18HYpX3RH4e9UuE";
 
 module.exports = {
     getMatchesOfTheDay: async function () {
@@ -53,7 +54,7 @@ async function getSpecificPronostiqueur(leaderboard, user) {
             return "" + user.toString() + " - **Classement** : " + (i+1) + " - **Points** : " + leaderboard[i][1];
         }
     }
-    return "Vous n'êtes pas pronostiqueur"
+    return messages.NOT_A_PRONOSTIQUEUR
 }
 async function getAllUsersLeaderboard() {
     const leaderboard = []
@@ -94,7 +95,7 @@ async function sendPronostiqueur(user, row) {
             }
         }]
     });
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}:batchUpdate`, {
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${property.SHEET_ID}:batchUpdate`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -181,7 +182,7 @@ async function addProno(tomorrow, match, winner, user) {
             }
         }]
     });
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}:batchUpdate`, {
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${property.SHEET_ID}:batchUpdate`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -217,10 +218,12 @@ async function getMatchesByDate(date) {
 }
 
 async function getSheet() {
-    const response = await fetch('https://sheets.googleapis.com/v4/spreadsheets/1dXYOoyGGjX0FBJA4fahAPzNM6mLY18HYpX3RH4e9UuE/?key=AIzaSyA0y6hVcdnK32CdlwoX2OpW7ooXjeNG4mw&includeGridData=true', {
+    await getToken();
+    const response = await fetch('https://sheets.googleapis.com/v4/spreadsheets/' + property.SHEET_ID + '/?includeGridData=true', {
         method: 'get',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${TOKEN.access_token}`
         }
     });
     return await response.json();
@@ -240,8 +243,9 @@ async function getToken() {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: "grant_type=refresh_token&refresh_token=1%2F%2F0490hpyxKibUmCgYIARAAGAQSNwF-L9IrknDvt5pU6GKyslvX6pwphM80zn01oVYfhGmcJuj2P1zKAosEp1-K6WY-LDPtUU3Gmrc&client_id=476206372269-jnmfpc6b4u5rifbosgp61rpiu1qefedr.apps.googleusercontent.com&client_secret=rbuq9DR8FE1XOfVuTSK6mr7j"
-
+            body: "grant_type=refresh_token&refresh_token=" + property.GOOGLE_API.REFRESH_TOKEN +
+                "&client_id=" + property.GOOGLE_API.CLIENT_ID +
+                "&client_secret=" + property.GOOGLE_API.CLIENT_SECRET
         });
         TOKEN = await response.json();
         const now = new Date();
