@@ -245,11 +245,10 @@ function getMatchStatsticsAsString(matches, firstTeamColumn, secondTeamColumn) {
         }
     }
     return matches[TEAM_NAME_LINE_INDEX].values[firstTeamColumn].formattedValue + " " +
-        (total*100/numberOfSample).toFixed(2) + " % " +
+        (total*100/numberOfSample).toFixed(2) + "% (" + total + ")" +
         " | " +
         matches[TEAM_NAME_LINE_INDEX].values[secondTeamColumn].formattedValue + " " +
-        (100 - total*100/numberOfSample).toFixed(2) + " % "
-        + "sur " + numberOfSample + "votes";
+        (100 - total*100/numberOfSample).toFixed(2) + "% (" + (numberOfSample - total) + ")";
 }
 
 async function getMatchesStatisticsByDate(date) {
