@@ -7,5 +7,6 @@
   "VOTE_RECEIVED": "**Vote enregistré** : ",
   "BEATS": " bat ",
   "PRONOSTIQUEUR_ALREADY_REGISTERED": "Tu es déjà inscrit, gros malin !",
-  "REGISTRATION_SUCCESS": "Ton inscription est validée ! Bravo :D"
+  "REGISTRATION_SUCCESS": "Ton inscription est validée ! Bravo :D",
+  "STATISTICS_OF_THE_DAY": "Voici les statistiques du jour !"
 }

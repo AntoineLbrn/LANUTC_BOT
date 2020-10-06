@@ -7,7 +7,8 @@ var TOKEN = null;
 
 const MATCH_DAY_LINE_INDEX = 0
 const TEAM_NAME_LINE_INDEX = 1
-
+const FIRST_PRONOSTIQUEUR_LINE = 3;
+const MAX_PRONOSTIQUEUR_STATS = 50;
 module.exports = {
     getMatchesOfTheDay: async function () {
         const tomorrow = getTomorrow();
@@ -43,6 +44,10 @@ module.exports = {
     getRanking: async function (user) {
         const leaderboard = await getAllUsersLeaderboard();
         return getSpecificPronostiqueur(leaderboard, user);
+    },
+    getStatisticsOfCurrentDay: async function() {
+        const today = getToday();
+        return await getMatchesStatisticsByDate(today);
     }
 }
 
@@ -217,6 +222,43 @@ async function getMatchesByDate(date) {
     return matchesAsArrayString;
 }
 
+function getMatchStatsticsAsString(matches, firstTeamColumn, secondTeamColumn) {
+    let numberOfSample = 0;
+    let total = 0;
+    let i=FIRST_PRONOSTIQUEUR_LINE;
+    for (i; i<MAX_PRONOSTIQUEUR_STATS; i++) {
+        console.log(matches[i].values[firstTeamColumn]);
+        if (matches[i].values[firstTeamColumn]) {
+            if (matches[i].values[firstTeamColumn].formattedValue === '1') {
+                total ++;
+                numberOfSample++;
+            } else if (matches[i].values[secondTeamColumn].formattedValue === '1') {
+                numberOfSample++;
+            }
+        }
+    }
+    return matches[TEAM_NAME_LINE_INDEX].values[firstTeamColumn].formattedValue + " " +
+        (total*100/numberOfSample).toFixed(2) + " % " +
+        " | " +
+        matches[TEAM_NAME_LINE_INDEX].values[secondTeamColumn].formattedValue + " " +
+        (100 - total*100/numberOfSample).toFixed(2) + " % "
+        + "sur " + numberOfSample + "votes";
+}
+
+async function getMatchesStatisticsByDate(date) {
+    let matchesStatisticsAsString = "```fix\n";
+    const sheet = await getSheet();
+    const matches = sheet.sheets[0].data[0].rowData;
+    let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
+    const nextDayColumnIndex = getNextDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
+    while (dayColumnIndex < nextDayColumnIndex) {
+        matchesStatisticsAsString += getMatchStatsticsAsString(matches, dayColumnIndex, dayColumnIndex +1) + "\n";
+        dayColumnIndex += 2;
+    }
+    console.log(matchesStatisticsAsString)
+    return matchesStatisticsAsString + "```";
+}
+
 async function getSheet() {
     await getToken();
     const response = await fetch('https://sheets.googleapis.com/v4/spreadsheets/' + property.SHEET_ID + '/?includeGridData=true', {
@@ -233,6 +275,13 @@ function getTomorrow() {
     const tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
     const dd = String(tomorrow.getDate()).padStart(2, '0');
     const mm = String(tomorrow.getMonth() + 1).padStart(2, '0'); //January is 0!
+    return dd + '/' + mm;
+}
+
+function getToday() {
+    const today = new Date(new Date().getTime());
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
     return dd + '/' + mm;
 }
 

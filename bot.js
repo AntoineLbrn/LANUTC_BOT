@@ -24,6 +24,12 @@ bot.on('message', async message => {
                         messages.SETUP_PRONOS
                     ).then(message => message.react('✅'))
                     break;
+                // !statistics
+                case 'statistics':
+                    message.channel.send(
+                        messages.STATISTICS_OF_THE_DAY + await Api.getStatisticsOfCurrentDay()
+                    )
+                    break;
                 // !pronos
                 case 'pronos':
                     const matches = await Api.getMatchesOfTheDay();
