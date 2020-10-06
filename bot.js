@@ -16,8 +16,9 @@ bot.on('message', async message => {
     // It will listen for messages that will start with `!`
     if (message.content.substring(0, 1) === '!') {
         const cmd = message.content.substring(1);
-        //admin only
-        if (message.member.hasPermission("ADMINISTRATOR")) {
+        const params = cmd.split(' ');
+        //admin only, check message.member to check it's not dm
+        if (message.member && message.member.hasPermission("ADMINISTRATOR")) {
             switch (cmd) {
                 case 'setuppronos':
                     message.channel.send(
@@ -50,10 +51,10 @@ bot.on('message', async message => {
                     break;
             }
         }
-        switch (cmd) {
+        switch (params[0]) {
             case 'leaderboard':
                 message.channel.send(
-                    await Api.getLeaderboard()
+                    await Api.getLeaderboard(params)
                 )
                 break;
             case 'rank':

@@ -36,10 +36,9 @@ module.exports = {
         }
         return sendPronostiqueur(user, i);
     },
-    getLeaderboard: async function (user) {
-
+    getLeaderboard: async function (params) {
         const leaderboard = await getAllUsersLeaderboard();
-        return getBestPronostiqueur(leaderboard);
+        return getBestPronostiqueurs(leaderboard, params);
     },
     getRanking: async function (user) {
         const leaderboard = await getAllUsersLeaderboard();
@@ -73,8 +72,16 @@ async function getAllUsersLeaderboard() {
     return leaderboard;
 }
 
-async function getBestPronostiqueur(leaderboard) {
+async function getBestPronostiqueurs(leaderboard, params) {
     leaderboard.sort(function(a, b){return parseFloat(a[1]) - parseFloat(b[1])}).reverse();
+    if (params[1] && params[1] > 0  && params[1] < 11) {
+        let leaderboardAsString = "";
+        let i=1;
+        for (i; i<= params[1]; i++) {
+            leaderboardAsString +="**" + i + " :** " + leaderboard[i-1][0] + " " + leaderboard[i-1][1] + " points\n"
+        }
+        return leaderboardAsString;
+    }
     return "**1er** : " + leaderboard[0][0] + " " + leaderboard[0][1] + " points\n" +
         "**2ème** : " + leaderboard[1][0] + " " + leaderboard[1][1] + " points\n" +
         "**3ème** : " + leaderboard[2][0] + " " + leaderboard[2][1] + " points";
@@ -255,7 +262,6 @@ async function getMatchesStatisticsByDate(date) {
         matchesStatisticsAsString += getMatchStatsticsAsString(matches, dayColumnIndex, dayColumnIndex +1) + "\n";
         dayColumnIndex += 2;
     }
-    console.log(matchesStatisticsAsString)
     return matchesStatisticsAsString + "```";
 }
 
