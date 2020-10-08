@@ -1,7 +1,7 @@
 var request = require('request');
 var logger = require('winston');
 const fetch = require("node-fetch");
-const property = require('../property.json');
+const property = require('./property.json');
 
 var TOKEN = null;
 

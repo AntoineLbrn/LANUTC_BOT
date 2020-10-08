@@ -1,7 +1,7 @@
 const Api = require('./Api')
 const Discord = require('discord.js');
-const property = require('../property.json');
-const messages = require('../messages.json');
+const property = require('./property.json');
+const messages = require('./messages.json');
 // Initialize Discord Bot
 var bot = new Discord.Client();
 
