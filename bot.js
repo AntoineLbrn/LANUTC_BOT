@@ -1,6 +1,6 @@
 const Api = require('./Api')
 const Discord = require('discord.js');
-const property = require('./property.json');
+const config = require('./config');
 const messages = require('./messages.json');
 // Initialize Discord Bot
 var bot = new Discord.Client();
@@ -69,7 +69,7 @@ bot.on('message', async message => {
 bot.on('messageReactionAdd', (reaction, user) => {
     const message = reaction.message
     const emoji = reaction.emoji;
-    if (!user.bot && message.author.id === property.BOT_ID) {
+    if (!user.bot && message.author.id === config.BOT_ID) {
         const pronos = message.content.split(' ');
         if (emoji.name === '1️⃣') {
             Api.fillPronos(user, pronos[2], pronos[5], 1).then(response => {
@@ -97,7 +97,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
             });
         }
         if (!user.bot
-            && message.author.id === property.BOT_ID
+            && message.author.id === config.BOT_ID
             && message.content === messages.SETUP_PRONOS
             && emoji.name === '✅') {
             Api.addPronostiqueur(user).then(response => {
@@ -108,7 +108,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
                 } else {
                     user.send(messages.REGISTRATION_SUCCESS);
                     const role = message.guild.roles.cache.find(role => role.name ===
-                        property.PRONOSTIQUEUR_ROLE_AS_STRING);
+                        config.PRONOSTIQUEUR_ROLE_AS_STRING);
                     const memberWhoReacted = message.guild.members.cache.get(user.id);
                     console.log(role);
                     console.log(memberWhoReacted);
@@ -122,4 +122,4 @@ bot.on('messageReactionAdd', (reaction, user) => {
     }
 });
 
-bot.login(property.BOT_TOKEN);
+bot.login(config.BOT_TOKEN);

@@ -1,7 +1,7 @@
 var request = require('request');
 var logger = require('winston');
 const fetch = require("node-fetch");
-const property = require('./property.json');
+const config = require('./config.json');
 
 var TOKEN = null;
 
@@ -107,7 +107,7 @@ async function sendPronostiqueur(user, row) {
             }
         }]
     });
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${property.SHEET_ID}:batchUpdate`, {
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${config.SHEET_ID}:batchUpdate`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ async function addProno(tomorrow, match, winner, user) {
             }
         }]
     });
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${property.SHEET_ID}:batchUpdate`, {
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${config.SHEET_ID}:batchUpdate`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -266,7 +266,7 @@ async function getMatchesStatisticsByDate(date) {
 
 async function getSheet() {
     await getToken();
-    const response = await fetch('https://sheets.googleapis.com/v4/spreadsheets/' + property.SHEET_ID + '/?includeGridData=true', {
+    const response = await fetch('https://sheets.googleapis.com/v4/spreadsheets/' + config.SHEET_ID + '/?includeGridData=true', {
         method: 'get',
         headers: {
             'Content-Type': 'application/json',
@@ -297,9 +297,9 @@ async function getToken() {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: "grant_type=refresh_token&refresh_token=" + property.GOOGLE_API.REFRESH_TOKEN +
-                "&client_id=" + property.GOOGLE_API.CLIENT_ID +
-                "&client_secret=" + property.GOOGLE_API.CLIENT_SECRET
+            body: "grant_type=refresh_token&refresh_token=" + config.GOOGLE_API.REFRESH_TOKEN +
+                "&client_id=" + config.GOOGLE_API.CLIENT_ID +
+                "&client_secret=" + config.GOOGLE_API.CLIENT_SECRET
         });
         TOKEN = await response.json();
         const now = new Date();
