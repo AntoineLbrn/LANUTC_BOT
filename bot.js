@@ -1,12 +1,6 @@
 const Api = require('./Api')
 const Discord = require('discord.js');
-const prod = require('./config/prod');
-let config = prod;
-
-//if not in prod environment
-if (! prod.BOT_ID) {
-    config = require('./config/dev.js');
-}
+const config = require('./configuration');
 const messages = require('./messages.json');
 // Initialize Discord Bot
 var bot = new Discord.Client();
