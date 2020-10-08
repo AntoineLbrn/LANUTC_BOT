@@ -2,7 +2,7 @@
   "name": "greeter-bot",
   "version": "1.0.0",
   "description": "Lanutc prono bot",
-  "main": "bot.js",
+  "main": "app/bot.js",
   "author": "Antoine LEBRUN",
   "dependencies": {
     "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
