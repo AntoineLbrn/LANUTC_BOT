@@ -1,7 +1,7 @@
 var request = require('request');
 var logger = require('winston');
 const fetch = require("node-fetch");
-const config = require('./config');
+const config = require('./config/prod');
 
 var TOKEN = null;
 
