@@ -47,6 +47,19 @@ module.exports = {
     getStatisticsOfCurrentDay: async function() {
         const today = getToday();
         return await getMatchesStatisticsByDate(today);
+    },
+    fillBO5Pronos: async function(user, team, score) {
+        let result;
+        const tomorrow = getTomorrow();
+        const matches = await getMatchesByDate(tomorrow);
+        matches.forEach(match => {
+            if (match[0] === team) {
+                result = addBO5Prono(tomorrow, team, user, score);
+            } else if (match[1] === team) {
+                result = addBO5Prono(tomorrow, team, user, score);
+            }
+        });
+        return result ? result : -2;
     }
 }
 
@@ -138,6 +151,17 @@ function getNextDayColumn(values, currentDate) {
     return null;
 }
 
+function getTeamColumnForNextMatch(sheet, date, team) {
+    const matches = sheet.sheets[0].data[0].rowData;
+    let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
+    const nextDayColumnIndex = getNextDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
+    while (dayColumnIndex < nextDayColumnIndex) {
+        if (matches[TEAM_NAME_LINE_INDEX].values[dayColumnIndex].formattedValue === team) {
+            return dayColumnIndex;
+        }
+        dayColumnIndex+=1
+    }
+}
 function getMatchColumn(sheet, date, match) {
     const matches = sheet.sheets[0].data[0].rowData;
     let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
@@ -160,6 +184,50 @@ async function getUserRow(sheet, user) {
         i++;
     }
     return -3;
+}
+
+async function addBO5Prono(tomorrow, team, user, score) {
+    const sheet = await getSheet();
+
+    const teamColumn = getTeamColumnForNextMatch(sheet, tomorrow, team);
+    const playerRow = await getUserRow(sheet, user);
+    if (playerRow === -3) {
+        return -3;
+    }
+    if (hasPronoAlreadyBeenDoneForThisMatch(sheet, playerRow, playerRow)) {
+        return -1;
+    }
+    await getToken();
+
+
+    const body = JSON.stringify({
+        requests: [{
+            repeatCell: {
+                range: {
+                    startColumnIndex: teamColumn,
+                    endColumnIndex: teamColumn + 1,
+                    startRowIndex: playerRow,
+                    endRowIndex: playerRow + 1,
+                    sheetId: 0
+                },
+                cell: {
+                    userEnteredValue: {
+                        "numberValue": score
+                    },
+                },
+                fields: "*"
+            }
+        }]
+    });
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${config.SHEET_ID}:batchUpdate`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${TOKEN.access_token}`,
+        },
+        body: body
+    });
+    return response.status === 200 ? 0 : -2
 }
 
 async function addProno(tomorrow, match, winner, user) {
@@ -305,6 +373,6 @@ async function getToken() {
         const now = new Date();
         TOKEN.refreshDate = new Date();
         TOKEN.refreshDate.setTime(now.getTime() + (30*60*1000))
+        console.log(TOKEN);
     }
-    console.log(TOKEN);
 }

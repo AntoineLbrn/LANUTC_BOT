@@ -49,6 +49,32 @@ bot.on('message', async message => {
                         })
                     }, 3000);
                     break;
+                //pronosBO5
+                case 'pronosBO5':
+                    const BO5matches = await Api.getMatchesOfTheDay();
+                    message.channel.send(
+                        messages.HEADER_PRONO_PLAYOFF
+                    )
+                    setTimeout(function () {
+                        BO5matches.forEach(match => {
+                            message.channel.send("**" + match[0] + " vs " + match[1] + "**");
+                            message.channel.send(
+                                "Score " + match[0]
+                            ).then(prono => {
+                                prono.react('1️⃣');
+                                prono.react('2️⃣');
+                                prono.react('3️⃣');
+                            });
+                            message.channel.send(
+                                "Score " + match[1]
+                            ).then(prono => {
+                                prono.react('1️⃣');
+                                prono.react('2️⃣');
+                                prono.react('3️⃣');
+                            });
+                        })
+                    }, 3000);
+                    break;
             }
         }
         switch (params[0]) {
@@ -71,30 +97,46 @@ bot.on('messageReactionAdd', (reaction, user) => {
     const emoji = reaction.emoji;
     if (!user.bot && message.author.id === config.BOT_ID) {
         const pronos = message.content.split(' ');
-        if (emoji.name === '1️⃣') {
-            Api.fillPronos(user, pronos[2], pronos[5], 1).then(response => {
+        //BO5 vote
+        if (pronos[0] === "Score") {
+            const score = getEmojiAsNumber(emoji.name);
+            Api.fillBO5Pronos(user, pronos[1], score).then(response => {
                 if (response === -2) {
                     user.send(messages.GENERIC_ERROR);
                 } else if (response === -1) {
-                    user.send(messages.PRONO_ALREADY_DONE + pronos[2] + "/" + pronos[5]);
+                    user.send(messages.PRONO_ALREADY_DONE + " " + pronos[1]);
                 } else if (response === -3) {
                     user.send(messages.NOT_A_PRONOSTIQUEUR);
                 } else {
-                    user.send(messages.VOTE_RECEIVED + pronos[2] + messages.BEATS + pronos[5]);
+                    user.send(messages.VOTE_RECEIVED + score + messages.SCORE + pronos[1]);
                 }
             });
-        } else if (emoji.name === '2️⃣') {
-            Api.fillPronos(user, pronos[2], pronos[5], 2).then(response => {
-                if (response === -2) {
-                    user.send(messages.GENERIC_ERROR);
-                } else if (response === -1) {
-                    user.send(messages.PRONO_ALREADY_DONE + pronos[2] + "/" + pronos[5]);
-                } else if (response === -3) {
-                    user.send(messages.NOT_A_PRONOSTIQUEUR);
-                } else {
-                    user.send(messages.VOTE_RECEIVED + pronos[5] + messages.BEATS + pronos[2]);
-                }
-            });
+        } else {
+            if (emoji.name === '1️⃣') {
+                Api.fillPronos(user, pronos[2], pronos[5], 1).then(response => {
+                    if (response === -2) {
+                        user.send(messages.GENERIC_ERROR);
+                    } else if (response === -1) {
+                        user.send(messages.PRONO_ALREADY_DONE + pronos[2] + "/" + pronos[5]);
+                    } else if (response === -3) {
+                        user.send(messages.NOT_A_PRONOSTIQUEUR);
+                    } else {
+                        user.send(messages.VOTE_RECEIVED + pronos[2] + messages.BEATS + pronos[5]);
+                    }
+                });
+            } else if (emoji.name === '2️⃣') {
+                Api.fillPronos(user, pronos[2], pronos[5], 2).then(response => {
+                    if (response === -2) {
+                        user.send(messages.GENERIC_ERROR);
+                    } else if (response === -1) {
+                        user.send(messages.PRONO_ALREADY_DONE + pronos[2] + "/" + pronos[5]);
+                    } else if (response === -3) {
+                        user.send(messages.NOT_A_PRONOSTIQUEUR);
+                    } else {
+                        user.send(messages.VOTE_RECEIVED + pronos[5] + messages.BEATS + pronos[2]);
+                    }
+                });
+            }
         }
         if (!user.bot
             && message.author.id === config.BOT_ID
@@ -123,3 +165,12 @@ bot.on('messageReactionAdd', (reaction, user) => {
 });
 
 bot.login(config.BOT_TOKEN);
+
+
+function getEmojiAsNumber(emoji) {
+    switch (emoji) {
+        case '1️⃣': return 1;
+        case '2️⃣': return 2;
+        case '3️⃣': return 3;
+    }
+}
