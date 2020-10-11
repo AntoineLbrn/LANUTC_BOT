@@ -171,7 +171,7 @@ bot.login(config.BOT_TOKEN);
 
 function getEmojiAsNumber(emoji) {
     switch (emoji) {
-        case '0️⃣': return 1;
+        case '0️⃣': return 0;
         case '1️⃣': return 1;
         case '2️⃣': return 2;
         case '3️⃣': return 3;
