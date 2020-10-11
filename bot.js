@@ -61,6 +61,7 @@ bot.on('message', async message => {
                             message.channel.send(
                                 "Score " + match[0]
                             ).then(prono => {
+                                prono.react('0️⃣');
                                 prono.react('1️⃣');
                                 prono.react('2️⃣');
                                 prono.react('3️⃣');
@@ -68,6 +69,7 @@ bot.on('message', async message => {
                             message.channel.send(
                                 "Score " + match[1]
                             ).then(prono => {
+                                prono.react('0️⃣');
                                 prono.react('1️⃣');
                                 prono.react('2️⃣');
                                 prono.react('3️⃣');
