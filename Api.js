@@ -194,7 +194,7 @@ async function addBO5Prono(tomorrow, team, user, score) {
     if (playerRow === -3) {
         return -3;
     }
-    if (hasPronoAlreadyBeenDoneForThisMatch(sheet, playerRow, playerRow)) {
+    if (hasPronoAlreadyBeenDoneForThisMatch(sheet, playerRow, teamColumn)) {
         return -1;
     }
     await getToken();
