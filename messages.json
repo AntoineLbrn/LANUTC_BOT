@@ -4,6 +4,7 @@
   "HEADER_PRONO_PLAYOFF": "C'est l'heure de voter pour le match de demain ! Réflechissez-bien !",
   "GENERIC_ERROR": "Erreur inattendue, réessaie ou tag un admin",
   "PRONO_ALREADY_DONE": "Tu as déjà pronostiqué ce match, gros malin ! ",
+  "PRONO_ALREADY_DONE_BO5": "Tu as déjà pronostiqué cette équipe, gros malin ! ",
   "NOT_A_PRONOSTIQUEUR": "Tu n'es pas inscrit aux pronostics... Étrange...",
   "VOTE_RECEIVED": "**Vote enregistré** : ",
   "BEATS": " bat ",

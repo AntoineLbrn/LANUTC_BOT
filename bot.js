@@ -104,7 +104,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
                 if (response === -2) {
                     user.send(messages.GENERIC_ERROR);
                 } else if (response === -1) {
-                    user.send(messages.PRONO_ALREADY_DONE + " " + pronos[1]);
+                    user.send(messages.PRONO_ALREADY_DONE_BO5 + " " + pronos[1]);
                 } else if (response === -3) {
                     user.send(messages.NOT_A_PRONOSTIQUEUR);
                 } else {
@@ -169,6 +169,7 @@ bot.login(config.BOT_TOKEN);
 
 function getEmojiAsNumber(emoji) {
     switch (emoji) {
+        case '0️⃣': return 1;
         case '1️⃣': return 1;
         case '2️⃣': return 2;
         case '3️⃣': return 3;
