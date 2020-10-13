@@ -234,7 +234,7 @@ async function addBO5Prono(tomorrow, match, user, score, winnerIsFirstTeam) {
     const requestOnFirstColumn = await sendProno(matchColumn, playerRow, winnerIsFirstTeam ? 3 : score, sheet);
     const requestOnSecondColumn = await sendProno(matchColumn+1, playerRow, winnerIsFirstTeam ? score : 3, sheet);
 
-    return requestOnFirstColumn === 0 && requestOnSecondColumn === 0 ? 0 : -2;
+    return requestOnFirstColumn === 0 && requestOnSecondColumn === 0 ? 0 : requestOnSecondColumn;
 }
 
 async function addBO1Prono(tomorrow, match, winner, user) {
