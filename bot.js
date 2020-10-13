@@ -31,8 +31,8 @@ bot.on('message', async message => {
                         messages.STATISTICS_OF_THE_DAY + await Api.getStatisticsOfCurrentDay()
                     )
                     break;
-                // !pronos
-                case 'pronos':
+                // !pronosBO1
+                case 'pronosBO1':
                     const matches = await Api.getMatchesOfTheDay();
                     message.channel.send(
                         messages.HEADER_PRONO
@@ -57,22 +57,20 @@ bot.on('message', async message => {
                     )
                     setTimeout(function () {
                         BO5matches.forEach(match => {
-                            message.channel.send("**" + match[0] + " vs " + match[1] + "**");
+                            message.channel.send("**" + match[0] + " vs " + match[1] + "**, Un seul choix possible :");
                             message.channel.send(
-                                "Score " + match[0]
+                                 match[0] + " gagne, réagissez avec le score de " + match[1]
                             ).then(prono => {
                                 prono.react('0️⃣');
                                 prono.react('1️⃣');
                                 prono.react('2️⃣');
-                                prono.react('3️⃣');
                             });
                             message.channel.send(
-                                "Score " + match[1]
+                                match[1] + " gagne, réagissez avec le score de " + match[0]
                             ).then(prono => {
                                 prono.react('0️⃣');
                                 prono.react('1️⃣');
                                 prono.react('2️⃣');
-                                prono.react('3️⃣');
                             });
                         })
                     }, 3000);
@@ -100,19 +98,9 @@ bot.on('messageReactionAdd', (reaction, user) => {
     if (!user.bot && message.author.id === config.BOT_ID) {
         const pronos = message.content.split(' ');
         //BO5 vote
-        if (pronos[0] === "Score") {
-            const score = getEmojiAsNumber(emoji.name);
-            Api.fillBO5Pronos(user, pronos[1], score).then(response => {
-                if (response === -2) {
-                    user.send(messages.GENERIC_ERROR);
-                } else if (response === -1) {
-                    user.send(messages.PRONO_ALREADY_DONE_BO5 + " " + pronos[1]);
-                } else if (response === -3) {
-                    user.send(messages.NOT_A_PRONOSTIQUEUR);
-                } else {
-                    user.send(messages.VOTE_RECEIVED + score + messages.SCORE + pronos[1]);
-                }
-            });
+        const score = getEmojiAsNumber(emoji.name);
+        if (pronos[1] === "gagne,") {
+            handleBO5Reaction(score, user, pronos);
         } else {
             if (emoji.name === '1️⃣') {
                 Api.fillPronos(user, pronos[2], pronos[5], 1).then(response => {
@@ -176,4 +164,21 @@ function getEmojiAsNumber(emoji) {
         case '2️⃣': return 2;
         case '3️⃣': return 3;
     }
+}
+
+
+function handleBO5Reaction(score, user, pronos) {
+    const winningTeam = pronos[0];
+    const losingTeam = pronos[7];
+    Api.fillBO5Pronos(user, winningTeam, losingTeam, score).then(response => {
+        if (response === -2) {
+            user.send(messages.GENERIC_ERROR);
+        } else if (response === -1) {
+            user.send(messages.PRONO_ALREADY_DONE);
+        } else if (response === -3) {
+            user.send(messages.NOT_A_PRONOSTIQUEUR);
+        } else {
+            user.send(messages.VOTE_RECEIVED + "3-" + score + messages.FOR + winningTeam);
+        }
+    });
 }

@@ -20,7 +20,7 @@ module.exports = {
         const matches = await getMatchesByDate(tomorrow);
         matches.forEach(match => {
             if (match[0] === team1 && match[1] === team2) {
-                result = addProno(tomorrow, match, winner, user);
+                result = addBO1Prono(tomorrow, match, winner, user);
             }
         });
         return result ? result : -2;
@@ -48,16 +48,17 @@ module.exports = {
         const today = getToday();
         return await getMatchesStatisticsByDate(today);
     },
-    fillBO5Pronos: async function(user, team, score) {
+    fillBO5Pronos: async function(user, winningTeam, losingTeam, score) {
         let result;
         const tomorrow = getTomorrow();
         const matches = await getMatchesByDate(tomorrow);
         matches.forEach(match => {
-            if (match[0] === team) {
-                result = addBO5Prono(tomorrow, team, user, score);
-            } else if (match[1] === team) {
-                result = addBO5Prono(tomorrow, team, user, score);
+            if (match[0] === losingTeam && match[1] === winningTeam) {
+                result = addBO5Prono(tomorrow, match, user, score, false);
+            } else if (match[0] === winningTeam && match[1] === losingTeam) {
+                result = addBO5Prono(tomorrow, match, user, score, true);
             }
+
         });
         return result ? result : -2;
     }
@@ -186,33 +187,27 @@ async function getUserRow(sheet, user) {
     return -3;
 }
 
-async function addBO5Prono(tomorrow, team, user, score) {
-    const sheet = await getSheet();
-
-    const teamColumn = getTeamColumnForNextMatch(sheet, tomorrow, team);
-    const playerRow = await getUserRow(sheet, user);
-    if (playerRow === -3) {
+async function sendProno(column, row, value, sheet) {
+    if (row === -3) {
         return -3;
     }
-    if (hasPronoAlreadyBeenDoneForThisMatch(sheet, playerRow, teamColumn)) {
+    if (hasPronoAlreadyBeenDoneForThisMatch(sheet, row, column)) {
         return -1;
     }
     await getToken();
-
-
     const body = JSON.stringify({
         requests: [{
             repeatCell: {
                 range: {
-                    startColumnIndex: teamColumn,
-                    endColumnIndex: teamColumn + 1,
-                    startRowIndex: playerRow,
-                    endRowIndex: playerRow + 1,
+                    startColumnIndex: column,
+                    endColumnIndex: column + 1,
+                    startRowIndex: row,
+                    endRowIndex: row + 1,
                     sheetId: 0
                 },
                 cell: {
                     userEnteredValue: {
-                        "numberValue": score
+                        "numberValue": value,
                     },
                 },
                 fields: "*"
@@ -228,49 +223,26 @@ async function addBO5Prono(tomorrow, team, user, score) {
         body: body
     });
     return response.status === 200 ? 0 : -2
+
 }
 
-async function addProno(tomorrow, match, winner, user) {
+async function addBO5Prono(tomorrow, match, user, score, winnerIsFirstTeam) {
     const sheet = await getSheet();
-
     const matchColumn = getMatchColumn(sheet, tomorrow, match);
     const playerRow = await getUserRow(sheet, user);
-    if (playerRow === -3) {
-        return -3;
-    }
-    if (hasPronoAlreadyBeenDoneForThisMatch(sheet, playerRow, matchColumn)) {
-        return -1;
-    }
-    await getToken();
 
-    const body = JSON.stringify({
-        requests: [{
-            repeatCell: {
-                range: {
-                    startColumnIndex: matchColumn + winner - 1,
-                    endColumnIndex: matchColumn + winner,
-                    startRowIndex: playerRow,
-                    endRowIndex: playerRow + 1,
-                    sheetId: 0
-                },
-                cell: {
-                    userEnteredValue: {
-                        "numberValue": 1
-                    },
-                },
-                fields: "*"
-            }
-        }]
-    });
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${config.SHEET_ID}:batchUpdate`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${TOKEN.access_token}`,
-        },
-        body: body
-    });
-    return response.status === 200 ? 0 : -2
+    const requestOnFirstColumn = await sendProno(matchColumn, playerRow, winnerIsFirstTeam ? 3 : score, sheet);
+    const requestOnSecondColumn = await sendProno(matchColumn+1, playerRow, winnerIsFirstTeam ? score : 3, sheet);
+
+    return requestOnFirstColumn === 0 && requestOnSecondColumn === 0 ? 0 : -2;
+}
+
+async function addBO1Prono(tomorrow, match, winner, user) {
+    const sheet = await getSheet();
+    const matchColumn = getMatchColumn(sheet, tomorrow, match);
+    const playerRow = await getUserRow(sheet, user);
+
+    return sendProno(matchColumn + winner - 1, playerRow, 1, sheet);
 }
 
 function hasPronoAlreadyBeenDoneForThisMatch(sheet, player, matchColumn) {
