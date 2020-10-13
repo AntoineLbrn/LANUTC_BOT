@@ -59,14 +59,14 @@ bot.on('message', async message => {
                         BO5matches.forEach(match => {
                             message.channel.send("**" + match[0] + " vs " + match[1] + "**, Un seul choix possible :");
                             message.channel.send(
-                                 match[0] + " gagne, réagissez avec le score de " + match[1]
+                                 match[0] + " gagne\n, 3-0 : 0️⃣\n 3-1 : 1️⃣\n 3-2 : 2️⃣"
                             ).then(prono => {
                                 prono.react('0️⃣');
                                 prono.react('1️⃣');
                                 prono.react('2️⃣');
                             });
                             message.channel.send(
-                                match[1] + " gagne, réagissez avec le score de " + match[0]
+                                match[1] + " gagne\n, 3-0 : 0️⃣\n 3-1 : 1️⃣\n 3-2 : 2️⃣"
                             ).then(prono => {
                                 prono.react('0️⃣');
                                 prono.react('1️⃣');
