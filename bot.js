@@ -59,14 +59,14 @@ bot.on('message', async message => {
                         BO5matches.forEach(match => {
                             message.channel.send("**" + match[0] + " vs " + match[1] + "**, Un seul choix possible :");
                             message.channel.send(
-                                 "**"+ match[0]+"**" + " gagne\n3-0 : 0️⃣\n3-1  : 1️⃣\n3-2 : 2️⃣\n"
+                                "**" + match[0] + "**" + messages.BEATS +  "**" + match[1] + "** " +  " \n3-0 : 0️⃣\n3-1  : 1️⃣\n3-2 : 2️⃣\n"
                             ).then(prono => {
                                 prono.react('0️⃣');
                                 prono.react('1️⃣');
                                 prono.react('2️⃣');
                             });
                             message.channel.send(
-                                "\n**"+match[1]+"**" + " gagne\n3-0 : 0️⃣\n3-1  : 1️⃣\n3-2 : 2️⃣"
+                                "\n**" + match[1] + "**" + messages.BEATS + "**" + match[0] + "** " + " \n3-0 : 0️⃣\n3-1  : 1️⃣\n3-2 : 2️⃣"
                             ).then(prono => {
                                 prono.react('0️⃣');
                                 prono.react('1️⃣');
@@ -99,7 +99,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
         const pronos = message.content.split(' ');
         //BO5 vote
         const score = getEmojiAsNumber(emoji.name);
-        if (pronos[1] === "gagne,") {
+        if (pronos[1] === "bat") {
             handleBO5Reaction(score, user, pronos);
         } else {
             if (emoji.name === '1️⃣') {
@@ -148,7 +148,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
                 }
             });
         }
-        message.channel.messages.fetch(message.id).then( messageEmbed => {
+        message.channel.messages.fetch(message.id).then(messageEmbed => {
             messageEmbed.reactions.resolve(reaction).users.remove(user);
         });
     }
@@ -168,8 +168,8 @@ function getEmojiAsNumber(emoji) {
 
 
 function handleBO5Reaction(score, user, pronos) {
-    const winningTeam = pronos[0];
-    const losingTeam = pronos[7];
+    const winningTeam = stringWithoutFormatting(pronos[0]);
+    const losingTeam = stringWithoutFormatting(pronos[2]);
     Api.fillBO5Pronos(user, winningTeam, losingTeam, score).then(response => {
         if (response === -2) {
             user.send(messages.GENERIC_ERROR);
@@ -182,3 +182,23 @@ function handleBO5Reaction(score, user, pronos) {
         }
     });
 }
+
+function stringWithoutFormatting(string) {
+    return string.substring(2,string.length-2);
+}
+
+const applyText = (canvas, text) => {
+    const ctx = canvas.getContext('2d');
+
+    // Declare a base size of the font
+    let fontSize = 70;
+
+    do {
+        // Assign the font to the context and decrement it so it can be measured again
+        ctx.font = `${fontSize -= 10}px sans-serif`;
+        // Compare pixel width of the text to the canvas minus the approximate avatar size
+    } while (ctx.measureText(text).width > canvas.width - 300);
+
+    // Return the result to use in the actual canvas
+    return ctx.font;
+};

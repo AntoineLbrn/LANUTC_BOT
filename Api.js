@@ -152,17 +152,6 @@ function getNextDayColumn(values, currentDate) {
     return null;
 }
 
-function getTeamColumnForNextMatch(sheet, date, team) {
-    const matches = sheet.sheets[0].data[0].rowData;
-    let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
-    const nextDayColumnIndex = getNextDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
-    while (dayColumnIndex < nextDayColumnIndex) {
-        if (matches[TEAM_NAME_LINE_INDEX].values[dayColumnIndex].formattedValue === team) {
-            return dayColumnIndex;
-        }
-        dayColumnIndex+=1
-    }
-}
 function getMatchColumn(sheet, date, match) {
     const matches = sheet.sheets[0].data[0].rowData;
     let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
@@ -233,7 +222,6 @@ async function addBO5Prono(tomorrow, match, user, score, winnerIsFirstTeam) {
 
     const requestOnFirstColumn = await sendProno(matchColumn, playerRow, winnerIsFirstTeam ? 3 : score, sheet);
     const requestOnSecondColumn = await sendProno(matchColumn+1, playerRow, winnerIsFirstTeam ? score : 3, sheet);
-
     return requestOnFirstColumn === 0 && requestOnSecondColumn === 0 ? 0 : requestOnSecondColumn;
 }
 
