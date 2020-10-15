@@ -31,6 +31,12 @@ bot.on('message', async message => {
                         messages.STATISTICS_OF_THE_DAY + await Api.getStatisticsOfCurrentDay()
                     )
                     break;
+                // !statisticsBO5
+                case 'statisticsBO5':
+                    message.channel.send(
+                        messages.STATISTICS_OF_THE_DAY + await Api.getStatisticsOfCurrentDayBO5()
+                    );
+                    break;
                 // !pronosBO1
                 case 'pronosBO1':
                     const matches = await Api.getMatchesOfTheDay();

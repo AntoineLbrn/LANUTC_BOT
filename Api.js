@@ -48,6 +48,10 @@ module.exports = {
         const today = getToday();
         return await getMatchesStatisticsByDate(today);
     },
+    getStatisticsOfCurrentDayBO5: async function() {
+        const today = getToday();
+        return await getMatchesStatisticsByDateBO5(today);
+    },
     fillBO5Pronos: async function(user, winningTeam, losingTeam, score) {
         let result;
         const tomorrow = getTomorrow();
@@ -279,6 +283,58 @@ function getMatchStatsticsAsString(matches, firstTeamColumn, secondTeamColumn) {
         (100 - total*100/numberOfSample).toFixed(2) + "% (" + (numberOfSample - total) + ")";
 }
 
+function getMatchStatsticsAsStringBO5(matches, firstTeamColumn) {
+    let votesForFirstTeam = [];
+    let votesForSecondTeam = [];
+    let i=FIRST_PRONOSTIQUEUR_LINE;
+    let numberOfSample = 0;
+    for (i; i<MAX_PRONOSTIQUEUR_STATS; i++) {
+        if (matches[i].values[firstTeamColumn]) {
+            if (matches[i].values[firstTeamColumn].formattedValue !== null) {
+                numberOfSample++;
+                if (matches[i].values[firstTeamColumn].formattedValue > matches[i].values[firstTeamColumn +1].formattedValue) {
+                    votesForFirstTeam.push(
+                        [matches[i].values[firstTeamColumn].formattedValue + "-" + matches[i].values[firstTeamColumn + 1].formattedValue]);
+                } else if (matches[i].values[firstTeamColumn].formattedValue < matches[i].values[firstTeamColumn +1].formattedValue) {
+                    votesForSecondTeam.push(
+                        [matches[i].values[firstTeamColumn+1].formattedValue + "-" + matches[i].values[firstTeamColumn].formattedValue]);
+                }
+            }
+        }
+    }
+    const votesForFirstTeamAsString =
+        "Votes pour " + matches[TEAM_NAME_LINE_INDEX].values[firstTeamColumn].formattedValue +
+        " : " + (votesForFirstTeam.length*100 /numberOfSample).toFixed(2) + "%"+
+        " (" + (votesForFirstTeam.length) + ")";
+    const votesForSecondTeamAsString =
+        "Votes pour " + matches[TEAM_NAME_LINE_INDEX].values[firstTeamColumn+1].formattedValue +
+        " : " + (votesForSecondTeam.length*100 /numberOfSample).toFixed(2) + "%"+
+        " (" + (votesForSecondTeam.length) + ")";
+
+    const frequencyForFirstTeamAsString = getVotesFrequencies(votesForFirstTeam);
+    const frequencyForSecondTeamAsString = getVotesFrequencies(votesForSecondTeam);
+
+    return votesForFirstTeamAsString + "\n" + frequencyForFirstTeamAsString + '\n\n' +
+        votesForSecondTeamAsString +  '\n' + frequencyForSecondTeamAsString;
+}
+
+function getVotesFrequencies(votesList) {
+    const frequencyForFirstTeam = votesList.reduce(groupBy, {});
+    const keys = Object.keys(frequencyForFirstTeam);
+    return keys.map(key => {
+        return key + " : " + (frequencyForFirstTeam[key]*100/votesList.length).toFixed(2) + "% (" + frequencyForFirstTeam[key] + ")";
+    }).join('\n');
+}
+function groupBy (acc, curr) {
+    if (typeof acc[curr] == 'undefined') {
+        acc[curr] = 1;
+    } else {
+        acc[curr] += 1;
+    }
+
+    return acc;
+}
+
 async function getMatchesStatisticsByDate(date) {
     let matchesStatisticsAsString = "```fix\n";
     const sheet = await getSheet();
@@ -287,6 +343,19 @@ async function getMatchesStatisticsByDate(date) {
     const nextDayColumnIndex = getNextDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
     while (dayColumnIndex < nextDayColumnIndex) {
         matchesStatisticsAsString += getMatchStatsticsAsString(matches, dayColumnIndex, dayColumnIndex +1) + "\n";
+        dayColumnIndex += 2;
+    }
+    return matchesStatisticsAsString + "```";
+}
+
+async function getMatchesStatisticsByDateBO5(date) {
+    let matchesStatisticsAsString = "```fix\n";
+    const sheet = await getSheet();
+    const matches = sheet.sheets[0].data[0].rowData;
+    let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
+    const nextDayColumnIndex = getNextDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
+    while (dayColumnIndex < nextDayColumnIndex) {
+        matchesStatisticsAsString += getMatchStatsticsAsStringBO5(matches, dayColumnIndex) + "\n";
         dayColumnIndex += 2;
     }
     return matchesStatisticsAsString + "```";
