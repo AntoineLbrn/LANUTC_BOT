@@ -6,14 +6,13 @@ module.exports = {
     getRank: getRank,
 };
 
-async function getRank(member, rank) {
+async function getRank(user, username, rank) {
     const canvas = Canvas.createCanvas(700, 250);
     const ctx = canvas.getContext(imageBuilderConst.CONTEXT);
     // Since the image takes time to load, you should await it
     await loadBackground(canvas, ctx);
-    const avatar = await Canvas.loadImage(member.user.displayAvatarURL({format: imageBuilderConst.FORMAT}));
+    const avatar = await Canvas.loadImage(user.displayAvatarURL({format: imageBuilderConst.FORMAT}));
     const rankImg = await Canvas.loadImage(imageBuilderConst.RANK.PODIUM.IMG_URL);
-
 
     ctx.drawImage(avatar,
         imageBuilderConst.RANK.AVATAR.X,
@@ -28,10 +27,10 @@ async function getRank(member, rank) {
         imageBuilderConst.RANK.PODIUM.HEIGHT);
 
     //print username
-    ctx.font = applyText(canvas, member.displayName);
+    ctx.font = applyText(canvas, username);
     ctx.fillStyle = imageBuilderConst.WHITE;
-    ctx.fillText(member.displayName,
-        computeCenteredTextX(imageBuilderConst.RANK.USERNAME.X, ctx.measureText(member.displayName).width, imageBuilderConst.RANK.USERNAME.WIDTH),
+    ctx.fillText(username,
+        computeCenteredTextX(imageBuilderConst.RANK.USERNAME.X, ctx.measureText(username).width, imageBuilderConst.RANK.USERNAME.WIDTH),
         imageBuilderConst.RANK.USERNAME.Y);
 
     //print points

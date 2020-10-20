@@ -31,7 +31,7 @@ bot.on('message', async message => {
                 case 'statistics':
                     message.channel.send(
                         messages.STATISTICS_OF_THE_DAY + await pronos.getStatisticsOfCurrentDay()
-                    )
+                    );
                     break;
                 // !statisticsBO5
                 case 'statisticsBO5':
@@ -44,7 +44,7 @@ bot.on('message', async message => {
                     const matches = await pronos.getMatchesOfTheDay();
                     message.channel.send(
                         messages.HEADER_PRONO
-                    )
+                    );
                     setTimeout(function () {
                         matches.forEach(match => {
                             message.channel.send(
@@ -62,7 +62,7 @@ bot.on('message', async message => {
                     const BO5matches = await pronos.getMatchesOfTheDay();
                     message.channel.send(
                         messages.HEADER_PRONO_PLAYOFF
-                    )
+                    );
                     setTimeout(function () {
                         BO5matches.forEach(match => {
                             message.channel.send("**" + match[0] + " vs " + match[1] + "**, Un seul choix possible :");
@@ -92,9 +92,19 @@ bot.on('message', async message => {
                 );
                 break;
             case 'rank':
-                const member = message.guild.members.cache.get(message.author.id);
                 const rank = await pronos.getRank(message.author);
-                const attachment = await imageBuilder.getRank(member, rank);
+                let username = null;
+                let user = null;
+                //If message is sent on a server
+                if (message.guild) {
+                    user = message.guild.members.cache.get(message.author.id).user;
+                    username = message.guild.members.cache.get(message.author.id).displayName;
+                //If message is a private message
+                } else {
+                    user = message.author;
+                    username = user.tag
+                }
+                const attachment = await imageBuilder.getRank(user, username, rank);
                 message.channel.send(message.author.toString(), attachment);
                 break;
         }
