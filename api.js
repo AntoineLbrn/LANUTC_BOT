@@ -43,10 +43,6 @@ module.exports = {
         const leaderboard = await getAllUsersLeaderboard();
         return getBestPronostiqueurs(leaderboard, params);
     },
-    getRankAsString: async function (user) {
-        const leaderboard = await getAllUsersLeaderboard();
-        return getSpecificPronostiqueurAsString(leaderboard, user);
-    },
     getStatisticsOfCurrentDay: async function() {
         const today = getToday();
         return await getMatchesStatisticsByDate(today);
@@ -69,7 +65,8 @@ module.exports = {
         });
         return result ? result : -2;
     }
-}
+};
+
 async function getSpecificPronostiqueur(leaderboard, user) {
     leaderboard.sort(function(a, b){return parseFloat(a[1]) - parseFloat(b[1])}).reverse();
     let i=0;
@@ -80,16 +77,7 @@ async function getSpecificPronostiqueur(leaderboard, user) {
     }
     return messages.NOT_A_PRONOSTIQUEUR
 }
-async function getSpecificPronostiqueurAsString(leaderboard, user) {
-    leaderboard.sort(function(a, b){return parseFloat(a[1]) - parseFloat(b[1])}).reverse();
-    let i=0;
-    for (i; i<leaderboard.length; i++) {
-        if (leaderboard[i][0][0] === user.tag) {
-            return "" + user.toString() + " - **Classement** : " + (i+1) + " - **Points** : " + leaderboard[i][1];
-        }
-    }
-    return messages.NOT_A_PRONOSTIQUEUR
-}
+
 async function getAllUsersLeaderboard() {
     const leaderboard = []
     const sheet = await getSheet();
