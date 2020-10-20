@@ -1,5 +1,5 @@
 const imageBuilder = require('./imageBuilder');
-const api = require('./api');
+const pronos = require('./pronos');
 const Discord = require('discord.js');
 const config = require('./configuration');
 const messages = require('./messages.json');
@@ -30,18 +30,18 @@ bot.on('message', async message => {
                 // !statistics
                 case 'statistics':
                     message.channel.send(
-                        messages.STATISTICS_OF_THE_DAY + await api.getStatisticsOfCurrentDay()
+                        messages.STATISTICS_OF_THE_DAY + await pronos.getStatisticsOfCurrentDay()
                     )
                     break;
                 // !statisticsBO5
                 case 'statisticsBO5':
                     message.channel.send(
-                        messages.STATISTICS_OF_THE_DAY + await api.getStatisticsOfCurrentDayBO5()
+                        messages.STATISTICS_OF_THE_DAY + await pronos.getStatisticsOfCurrentDayBO5()
                     );
                     break;
                 // !pronosBO1
                 case 'pronosBO1':
-                    const matches = await api.getMatchesOfTheDay();
+                    const matches = await pronos.getMatchesOfTheDay();
                     message.channel.send(
                         messages.HEADER_PRONO
                     )
@@ -59,7 +59,7 @@ bot.on('message', async message => {
                     break;
                 //pronosBO5
                 case 'pronosBO5':
-                    const BO5matches = await api.getMatchesOfTheDay();
+                    const BO5matches = await pronos.getMatchesOfTheDay();
                     message.channel.send(
                         messages.HEADER_PRONO_PLAYOFF
                     )
@@ -88,12 +88,12 @@ bot.on('message', async message => {
         switch (params[0]) {
             case 'leaderboard':
                 message.channel.send(
-                    await api.getLeaderboard(params)
+                    await pronos.getLeaderboard(params)
                 );
                 break;
             case 'rank':
                 const member = message.guild.members.cache.get(message.author.id);
-                const rank = await api.getRank(message.author);
+                const rank = await pronos.getRank(message.author);
                 const attachment = await imageBuilder.getRank(member, rank);
                 message.channel.send(message.author.toString(), attachment);
                 break;
@@ -113,7 +113,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
             handleBO5Reaction(score, user, pronos);
         } else {
             if (emoji.name === '1️⃣') {
-                api.fillPronos(user, pronos[2], pronos[5], 1).then(response => {
+                pronos.fillPronos(user, pronos[2], pronos[5], 1).then(response => {
                     if (response === -2) {
                         user.send(messages.GENERIC_ERROR);
                     } else if (response === -1) {
@@ -125,7 +125,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
                     }
                 });
             } else if (emoji.name === '2️⃣') {
-                api.fillPronos(user, pronos[2], pronos[5], 2).then(response => {
+                pronos.fillPronos(user, pronos[2], pronos[5], 2).then(response => {
                     if (response === -2) {
                         user.send(messages.GENERIC_ERROR);
                     } else if (response === -1) {
@@ -142,7 +142,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
             && message.author.id === config.BOT_ID
             && message.content === messages.SETUP_PRONOS
             && emoji.name === '✅') {
-            api.addPronostiqueur(user).then(response => {
+            pronos.addPronostiqueur(user).then(response => {
                 if (response === -2) {
                     user.send(messages.GENERIC_ERROR);
                 } else if (response === -1) {
@@ -184,7 +184,7 @@ function getEmojiAsNumber(emoji) {
 function handleBO5Reaction(score, user, pronos) {
     const winningTeam = stringWithoutFormatting(pronos[0]);
     const losingTeam = stringWithoutFormatting(pronos[2]);
-    api.fillBO5Pronos(user, winningTeam, losingTeam, score).then(response => {
+    pronos.fillBO5Pronos(user, winningTeam, losingTeam, score).then(response => {
         if (response === -2) {
             user.send(messages.GENERIC_ERROR);
         } else if (response === -1) {
