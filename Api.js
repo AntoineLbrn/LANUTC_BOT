@@ -10,6 +10,10 @@ const TEAM_NAME_LINE_INDEX = 1
 const FIRST_PRONOSTIQUEUR_LINE = 3;
 const MAX_PRONOSTIQUEUR_STATS = 50;
 module.exports = {
+    getRank: async function(user) {
+        const leaderboard = await getAllUsersLeaderboard();
+        return getSpecificPronostiqueur(leaderboard, user);
+    },
     getMatchesOfTheDay: async function () {
         const tomorrow = getTomorrow();
         return await getMatchesByDate(tomorrow);
@@ -40,9 +44,9 @@ module.exports = {
         const leaderboard = await getAllUsersLeaderboard();
         return getBestPronostiqueurs(leaderboard, params);
     },
-    getRanking: async function (user) {
+    getRankAsString: async function (user) {
         const leaderboard = await getAllUsersLeaderboard();
-        return getSpecificPronostiqueur(leaderboard, user);
+        return getSpecificPronostiqueurAsString(leaderboard, user);
     },
     getStatisticsOfCurrentDay: async function() {
         const today = getToday();
@@ -67,8 +71,17 @@ module.exports = {
         return result ? result : -2;
     }
 }
-
 async function getSpecificPronostiqueur(leaderboard, user) {
+    leaderboard.sort(function(a, b){return parseFloat(a[1]) - parseFloat(b[1])}).reverse();
+    let i=0;
+    for (i; i<leaderboard.length; i++) {
+        if (leaderboard[i][0][0] === user.tag) {
+            return [i+1,leaderboard[i][1][0]];
+        }
+    }
+    return messages.NOT_A_PRONOSTIQUEUR
+}
+async function getSpecificPronostiqueurAsString(leaderboard, user) {
     leaderboard.sort(function(a, b){return parseFloat(a[1]) - parseFloat(b[1])}).reverse();
     let i=0;
     for (i; i<leaderboard.length; i++) {

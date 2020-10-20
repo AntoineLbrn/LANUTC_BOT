@@ -2,6 +2,7 @@ const Api = require('./Api')
 const Discord = require('discord.js');
 const config = require('./configuration');
 const messages = require('./messages.json');
+const Canvas = require('canvas');
 // Initialize Discord Bot
 var bot = new Discord.Client();
 
@@ -91,8 +92,37 @@ bot.on('message', async message => {
                 break;
             case 'rank':
                 message.channel.send(
-                    await Api.getRanking(message.author)
-                )
+                    await Api.getRankAsString(message.author)
+                );
+                break;
+            case 'rankIMG':
+                const rank = await Api.getRank(message.author);
+                const member = message.guild.members.cache.get(message.author.id);
+                const canvas = Canvas.createCanvas(700, 250);
+                const ctx = canvas.getContext('2d');
+                // Since the image takes time to load, you should await it
+                const background = await Canvas.loadImage('./background.jpg');
+                // This uses the canvas dimensions to stretch the image onto the entire canvas
+                ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+                const avatar = await Canvas.loadImage(member.user.displayAvatarURL({ format: 'png' }));
+                const rankImg = await Canvas.loadImage("./rank.png");
+                ctx.drawImage(avatar, 525, canvas.height / 2 - 150/2, 150, 150);
+                ctx.drawImage(rankImg, 25, 110, 100, 100);
+
+                ctx.font = applyText(canvas, member.displayName);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(member.displayName, canvas.width / 4.6, canvas.height / 3);
+                console.log(rank);
+                ctx.font = applyText(canvas, rank[1] + " points");
+                ctx.fillText(rank[1] + " points", canvas.width / 3.5, canvas.height / 1.2);
+                ctx.fillStyle = '#F0E68C';
+                ctx.font = applyText(canvas, rank[0]);
+                ctx.fillText(rank[0], canvas.width / 15, canvas.height / 3.5);
+
+                // Use helpful Attachment class structure to process the file for you
+                const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'rank.png');
+                message.channel.send(message.author.toString(), attachment);
+                break;
         }
     }
 })
@@ -165,10 +195,14 @@ bot.login(config.BOT_TOKEN);
 
 function getEmojiAsNumber(emoji) {
     switch (emoji) {
-        case '0️⃣': return 0;
-        case '1️⃣': return 1;
-        case '2️⃣': return 2;
-        case '3️⃣': return 3;
+        case '0️⃣':
+            return 0;
+        case '1️⃣':
+            return 1;
+        case '2️⃣':
+            return 2;
+        case '3️⃣':
+            return 3;
     }
 }
 
@@ -197,13 +231,13 @@ const applyText = (canvas, text) => {
     const ctx = canvas.getContext('2d');
 
     // Declare a base size of the font
-    let fontSize = 70;
+    let fontSize = 50;
 
     do {
         // Assign the font to the context and decrement it so it can be measured again
-        ctx.font = `${fontSize -= 10}px sans-serif`;
+        ctx.font = `${fontSize -= 1}px sans-serif`;
         // Compare pixel width of the text to the canvas minus the approximate avatar size
-    } while (ctx.measureText(text).width > canvas.width - 300);
+    } while (ctx.measureText(text).width > canvas.width - 330);
 
     // Return the result to use in the actual canvas
     return ctx.font;
