@@ -14,8 +14,8 @@ module.exports = {
         "AVATAR": {
             "X": 525,
             "Y": 50,
-            "WIDTH": 150,
-            "HEIGHT": 150
+            "WIDTH": 140,
+            "HEIGHT": 140
         },
         "PODIUM": {
             "IMG_URL": "podium.png",
@@ -25,16 +25,19 @@ module.exports = {
             "HEIGHT": 100
         },
         "USERNAME": {
-            "WIDTH": 152,
-            "HEIGHT": 83
+            "WIDTH": 370,
+            "X": 152,
+            "Y": 83
         },
         "POINTS": {
-            "WIDTH": 200,
-            "HEIGHT": 208
+            "WIDTH": 370,
+            "X": 152,
+            "Y": 198
         },
         "RANK": {
-            "WIDTH": 47,
-            "HEIGHT": 71
+            "WIDTH": 100,
+            "X": 25,
+            "Y": 71
         }
     },
 };
