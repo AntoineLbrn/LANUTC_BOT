@@ -1,8 +1,9 @@
-const Api = require('./Api')
+const imageBuilder = require('./imageBuilder');
+const api = require('./api');
 const Discord = require('discord.js');
 const config = require('./configuration');
 const messages = require('./messages.json');
-const Canvas = require('canvas');
+
 // Initialize Discord Bot
 var bot = new Discord.Client();
 
@@ -29,18 +30,18 @@ bot.on('message', async message => {
                 // !statistics
                 case 'statistics':
                     message.channel.send(
-                        messages.STATISTICS_OF_THE_DAY + await Api.getStatisticsOfCurrentDay()
+                        messages.STATISTICS_OF_THE_DAY + await api.getStatisticsOfCurrentDay()
                     )
                     break;
                 // !statisticsBO5
                 case 'statisticsBO5':
                     message.channel.send(
-                        messages.STATISTICS_OF_THE_DAY + await Api.getStatisticsOfCurrentDayBO5()
+                        messages.STATISTICS_OF_THE_DAY + await api.getStatisticsOfCurrentDayBO5()
                     );
                     break;
                 // !pronosBO1
                 case 'pronosBO1':
-                    const matches = await Api.getMatchesOfTheDay();
+                    const matches = await api.getMatchesOfTheDay();
                     message.channel.send(
                         messages.HEADER_PRONO
                     )
@@ -58,7 +59,7 @@ bot.on('message', async message => {
                     break;
                 //pronosBO5
                 case 'pronosBO5':
-                    const BO5matches = await Api.getMatchesOfTheDay();
+                    const BO5matches = await api.getMatchesOfTheDay();
                     message.channel.send(
                         messages.HEADER_PRONO_PLAYOFF
                     )
@@ -87,40 +88,13 @@ bot.on('message', async message => {
         switch (params[0]) {
             case 'leaderboard':
                 message.channel.send(
-                    await Api.getLeaderboard(params)
-                )
-                break;
-            case 'rank':
-                message.channel.send(
-                    await Api.getRankAsString(message.author)
+                    await api.getLeaderboard(params)
                 );
                 break;
-            case 'rankIMG':
-                const rank = await Api.getRank(message.author);
+            case 'rank':
                 const member = message.guild.members.cache.get(message.author.id);
-                const canvas = Canvas.createCanvas(700, 250);
-                const ctx = canvas.getContext('2d');
-                // Since the image takes time to load, you should await it
-                const background = await Canvas.loadImage('./background.jpg');
-                // This uses the canvas dimensions to stretch the image onto the entire canvas
-                ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-                const avatar = await Canvas.loadImage(member.user.displayAvatarURL({ format: 'png' }));
-                const rankImg = await Canvas.loadImage("./rank.png");
-                ctx.drawImage(avatar, 525, canvas.height / 2 - 150/2, 150, 150);
-                ctx.drawImage(rankImg, 25, 110, 100, 100);
-
-                ctx.font = applyText(canvas, member.displayName);
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText(member.displayName, canvas.width / 4.6, canvas.height / 3);
-                console.log(rank);
-                ctx.font = applyText(canvas, rank[1] + " points");
-                ctx.fillText(rank[1] + " points", canvas.width / 3.5, canvas.height / 1.2);
-                ctx.fillStyle = '#F0E68C';
-                ctx.font = applyText(canvas, rank[0]);
-                ctx.fillText(rank[0], canvas.width / 15, canvas.height / 3.5);
-
-                // Use helpful Attachment class structure to process the file for you
-                const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'rank.png');
+                const rank = await api.getRank(message.author);
+                const attachment = await imageBuilder.getRank(member, rank);
                 message.channel.send(message.author.toString(), attachment);
                 break;
         }
@@ -139,7 +113,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
             handleBO5Reaction(score, user, pronos);
         } else {
             if (emoji.name === '1️⃣') {
-                Api.fillPronos(user, pronos[2], pronos[5], 1).then(response => {
+                api.fillPronos(user, pronos[2], pronos[5], 1).then(response => {
                     if (response === -2) {
                         user.send(messages.GENERIC_ERROR);
                     } else if (response === -1) {
@@ -151,7 +125,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
                     }
                 });
             } else if (emoji.name === '2️⃣') {
-                Api.fillPronos(user, pronos[2], pronos[5], 2).then(response => {
+                api.fillPronos(user, pronos[2], pronos[5], 2).then(response => {
                     if (response === -2) {
                         user.send(messages.GENERIC_ERROR);
                     } else if (response === -1) {
@@ -168,7 +142,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
             && message.author.id === config.BOT_ID
             && message.content === messages.SETUP_PRONOS
             && emoji.name === '✅') {
-            Api.addPronostiqueur(user).then(response => {
+            api.addPronostiqueur(user).then(response => {
                 if (response === -2) {
                     user.send(messages.GENERIC_ERROR);
                 } else if (response === -1) {
@@ -210,7 +184,7 @@ function getEmojiAsNumber(emoji) {
 function handleBO5Reaction(score, user, pronos) {
     const winningTeam = stringWithoutFormatting(pronos[0]);
     const losingTeam = stringWithoutFormatting(pronos[2]);
-    Api.fillBO5Pronos(user, winningTeam, losingTeam, score).then(response => {
+    api.fillBO5Pronos(user, winningTeam, losingTeam, score).then(response => {
         if (response === -2) {
             user.send(messages.GENERIC_ERROR);
         } else if (response === -1) {
@@ -226,19 +200,3 @@ function handleBO5Reaction(score, user, pronos) {
 function stringWithoutFormatting(string) {
     return string.substring(2,string.length-2);
 }
-
-const applyText = (canvas, text) => {
-    const ctx = canvas.getContext('2d');
-
-    // Declare a base size of the font
-    let fontSize = 50;
-
-    do {
-        // Assign the font to the context and decrement it so it can be measured again
-        ctx.font = `${fontSize -= 1}px sans-serif`;
-        // Compare pixel width of the text to the canvas minus the approximate avatar size
-    } while (ctx.measureText(text).width > canvas.width - 330);
-
-    // Return the result to use in the actual canvas
-    return ctx.font;
-};

@@ -1,7 +1,6 @@
-var request = require('request');
-var logger = require('winston');
 const fetch = require("node-fetch");
 const config = require('./configuration');
+const messages = require('./messages.json');
 
 var TOKEN = null;
 
