@@ -47,6 +47,8 @@ bot.on('message', async message => {
                     );
                     setTimeout(function () {
                         matches.forEach(match => {
+
+
                             message.channel.send(
                                 "** :one: " + match[0] + " vs :two: " + match[1] + " **"
                             ).then(prono => {
