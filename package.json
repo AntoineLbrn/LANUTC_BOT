@@ -11,23 +11,29 @@
     "googleapis": "^60.0.1",
     "node-fetch": "^2.6.0",
     "request": "^2.88.2",
-    "winston": "^3.3.3",
-    "lint-staged": "^10.4.2"
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "discord.js": "^12.3.1",
     "husky": "^4.3.0",
+    "lint-staged": "^10.4.2",
     "prettier": "^2.1.2",
+    "pretty-quick": "^3.1.0",
     "request": "^2.88.2"
+  },
+  "scripts": {
+    "lint:js": "eslint . --ext .js,.jsx",
+    "lint:js:fix": "npm run lint:js -- --fix"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx}": [
+      "eslint . --fix",
+      "git add"
+    ]
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "pretty-quick --staged"
     }
-  },
-  "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
-      "prettier --write"
-    ]
   }
 }
