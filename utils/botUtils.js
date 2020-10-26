@@ -1,3 +1,6 @@
+const config = require("../config/configuration");
+const messages = require("../static/messages");
+
 module.exports = {
   RECEIVE_MESSAGE_CODE: "message",
   READY_CODE: "ready",
@@ -11,4 +14,29 @@ module.exports = {
     LEADERBOARD: "leaderboard",
     RANK: "rank",
   },
+  //Don't forget Heroku's server is 2 hours late from France
+  VOTE_REMINDER: {
+    HOURS: 21,
+    MINUTES: 0,
+  },
+  isBO5Vote: isBO5Vote,
+  isBO1Vote: isBO1Vote,
+  isSetupMessageReaction: isSetupMessageReaction,
 };
+
+function isBO5Vote(vote) {
+  return vote[1] === "bat";
+}
+
+function isBO1Vote(vote) {
+  return vote[3] === "vs";
+}
+
+function isSetupMessageReaction(user, message, emoji) {
+  return (
+    !user.bot &&
+    message.author.id === config.BOT_ID &&
+    message.content === messages.SETUP_PRONOS &&
+    emoji.name === "✅"
+  );
+}

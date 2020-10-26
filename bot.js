@@ -143,46 +143,15 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
     const vote = message.content.split(" ");
     //BO5 vote
     const score = getEmojiAsNumber(emoji.name);
-    if (vote[1] === "bat") {
+    if (!(vote && vote[1])) {
+      return;
+    } else if (botUtils.isBO5Vote(vote)) {
       handleBO5Reaction(score, user, vote);
-    } else {
-      if (emoji.name === "1️⃣") {
-        vote.fillPronos(user, vote[2], vote[5], 1).then((response) => {
-          if (response === -2) {
-            user.send(messages.GENERIC_ERROR);
-          } else if (response === -1) {
-            user.send(messages.PRONO_ALREADY_DONE + vote[2] + "/" + vote[5]);
-          } else if (response === -3) {
-            user.send(messages.NOT_A_PRONOSTIQUEUR);
-          } else {
-            user.send(
-              messages.VOTE_RECEIVED + vote[2] + messages.BEATS + vote[5]
-            );
-          }
-        });
-      } else if (emoji.name === "2️⃣") {
-        vote.fillPronos(user, vote[2], vote[5], 2).then((response) => {
-          if (response === -2) {
-            user.send(messages.GENERIC_ERROR);
-          } else if (response === -1) {
-            user.send(messages.PRONO_ALREADY_DONE + vote[2] + "/" + vote[5]);
-          } else if (response === -3) {
-            user.send(messages.NOT_A_PRONOSTIQUEUR);
-          } else {
-            user.send(
-              messages.VOTE_RECEIVED + vote[5] + messages.BEATS + vote[2]
-            );
-          }
-        });
-      }
+    } else if (botUtils.isBO1Vote(vote)) {
+      handleBO1Reaction(score, user, vote, emoji);
     }
-    if (
-      !user.bot &&
-      message.author.id === config.BOT_ID &&
-      message.content === messages.SETUP_PRONOS &&
-      emoji.name === "✅"
-    ) {
-      vote.addPronostiqueur(user).then((response) => {
+    if (botUtils.isSetupMessageReaction(user, message, emoji)) {
+      pronos.addPronostiqueur(user).then((response) => {
         if (response === -2) {
           user.send(messages.GENERIC_ERROR);
         } else if (response === -1) {
@@ -222,6 +191,33 @@ function getEmojiAsNumber(emoji) {
   }
 }
 
+function handleBO1Reaction(score, user, vote, emoji) {
+  if (emoji.name === "1️⃣") {
+    pronos.fillPronos(user, vote[2], vote[5], 1).then((response) => {
+      if (response === -2) {
+        user.send(messages.GENERIC_ERROR);
+      } else if (response === -1) {
+        user.send(messages.PRONO_ALREADY_DONE + vote[2] + "/" + vote[5]);
+      } else if (response === -3) {
+        user.send(messages.NOT_A_PRONOSTIQUEUR);
+      } else {
+        user.send(messages.VOTE_RECEIVED + vote[2] + messages.BEATS + vote[5]);
+      }
+    });
+  } else if (emoji.name === "2️⃣") {
+    pronos.fillPronos(user, vote[2], vote[5], 2).then((response) => {
+      if (response === -2) {
+        user.send(messages.GENERIC_ERROR);
+      } else if (response === -1) {
+        user.send(messages.PRONO_ALREADY_DONE + vote[2] + "/" + vote[5]);
+      } else if (response === -3) {
+        user.send(messages.NOT_A_PRONOSTIQUEUR);
+      } else {
+        user.send(messages.VOTE_RECEIVED + vote[5] + messages.BEATS + vote[2]);
+      }
+    });
+  }
+}
 function handleBO5Reaction(score, user, vote) {
   const winningTeam = stringWithoutFormatting(vote[0]);
   const losingTeam = stringWithoutFormatting(vote[2]);
