@@ -1,4 +1,4 @@
-const messages = require("./messages.json");
+const messages = require("../static/messages");
 const apiGoogle = require("./apiGoogle");
 
 const MATCH_DAY_LINE_INDEX = 0;

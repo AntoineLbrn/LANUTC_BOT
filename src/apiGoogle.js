@@ -1,4 +1,4 @@
-const config = require("./configuration");
+const config = require("../config/configuration");
 const fetch = require("node-fetch");
 var TOKEN = null;
 

@@ -1,9 +1,9 @@
-const imageBuilder = require("./imageBuilder");
-const botUtils = require("./botUtils");
-const pronos = require("./pronos");
+const imageBuilder = require("./src/imageBuilder");
+const botUtils = require("./utils/botUtils");
+const pronos = require("./src/pronos");
 const Discord = require("discord.js");
-const config = require("./configuration");
-const messages = require("./messages.json");
+const config = require("./config/configuration");
+const messages = require("./static/messages");
 
 // Initialize Discord Bot
 var bot = new Discord.Client();
