@@ -22,6 +22,8 @@ module.exports = {
   isBO5Vote: isBO5Vote,
   isBO1Vote: isBO1Vote,
   isSetupMessageReaction: isSetupMessageReaction,
+  getEmojiAsNumber: getEmojiAsNumber,
+  teamNameWithoutFormatting: teamNameWithoutFormatting,
 };
 
 function isBO5Vote(vote) {
@@ -39,4 +41,21 @@ function isSetupMessageReaction(user, message, emoji) {
     message.content === messages.SETUP_PRONOS &&
     emoji.name === "✅"
   );
+}
+
+function getEmojiAsNumber(emoji) {
+  switch (emoji) {
+    case "0️⃣":
+      return 0;
+    case "1️⃣":
+      return 1;
+    case "2️⃣":
+      return 2;
+    case "3️⃣":
+      return 3;
+  }
+}
+
+function teamNameWithoutFormatting(string) {
+  return string.substring(2, string.length - 2);
 }

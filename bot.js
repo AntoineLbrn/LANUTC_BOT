@@ -4,6 +4,7 @@ const pronos = require("./src/pronos");
 const Discord = require("discord.js");
 const config = require("./config/configuration");
 const messages = require("./static/messages");
+const schedule = require("node-schedule");
 
 // Initialize Discord Bot
 var bot = new Discord.Client();
@@ -12,7 +13,26 @@ bot.on(botUtils.READY_CODE, () => {
   console.log("I am ready!");
 });
 
-//TODO: implementer un rappel
+schedule.scheduleJob(
+  {
+    hour: botUtils.VOTE_REMINDER.HOURS,
+    minutes: botUtils.VOTE_REMINDER.MINUTES,
+  },
+  () => {
+    pronos.getUsersWhoDidNotVote().then((usersToPing) => {
+      if (usersToPing) {
+        getUserToPingByChannel(usersToPing).then((userToPingByChannel) => {
+          userToPingByChannel.forEach((userChannel) => {
+            userChannel.channel.send(
+              messages.FORGOT_PRONOS + " " + userChannel.user.join()
+            );
+          });
+        });
+      }
+    });
+  }
+);
+
 bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
   // Our bot needs to know if it will execute a command
   // It will listen for messages that will start with `!`
@@ -142,7 +162,7 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
   if (!user.bot && message.author.id === config.BOT_ID) {
     const vote = message.content.split(" ");
     //BO5 vote
-    const score = getEmojiAsNumber(emoji.name);
+    const score = botUtils.getEmojiAsNumber(emoji.name);
     if (!(vote && vote[1])) {
       return;
     } else if (botUtils.isBO5Vote(vote)) {
@@ -151,7 +171,7 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
       handleBO1Reaction(score, user, vote, emoji);
     }
     if (botUtils.isSetupMessageReaction(user, message, emoji)) {
-      pronos.addPronostiqueur(user).then((response) => {
+      pronos.addPronostiqueur(user, message.guild).then((response) => {
         if (response === -2) {
           user.send(messages.GENERIC_ERROR);
         } else if (response === -1) {
@@ -162,11 +182,7 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
             (role) => role.name === config.PRONOSTIQUEUR_ROLE_AS_STRING
           );
           const memberWhoReacted = message.guild.members.cache.get(user.id);
-          console.log(role);
-          console.log(memberWhoReacted);
-          memberWhoReacted.roles
-            .add(role)
-            .then((response) => console.log(response));
+          memberWhoReacted.roles.add(role);
         }
       });
     }
@@ -177,19 +193,6 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
 });
 
 bot.login(config.BOT_TOKEN);
-
-function getEmojiAsNumber(emoji) {
-  switch (emoji) {
-    case "0️⃣":
-      return 0;
-    case "1️⃣":
-      return 1;
-    case "2️⃣":
-      return 2;
-    case "3️⃣":
-      return 3;
-  }
-}
 
 function handleBO1Reaction(score, user, vote, emoji) {
   if (emoji.name === "1️⃣") {
@@ -219,8 +222,8 @@ function handleBO1Reaction(score, user, vote, emoji) {
   }
 }
 function handleBO5Reaction(score, user, vote) {
-  const winningTeam = stringWithoutFormatting(vote[0]);
-  const losingTeam = stringWithoutFormatting(vote[2]);
+  const winningTeam = botUtils.teamNameWithoutFormatting(vote[0]);
+  const losingTeam = botUtils.teamNameWithoutFormatting(vote[2]);
   pronos
     .fillBO5Pronos(user, winningTeam, losingTeam, score)
     .then((response) => {
@@ -237,7 +240,31 @@ function handleBO5Reaction(score, user, vote) {
       }
     });
 }
+async function getUserToPingByChannel(usersToPing) {
+  let userToPingByChannel = [];
+  for (const userToPing of usersToPing) {
+    const channel = bot.channels.cache.get(userToPing.channelId);
+    const server = bot.guilds.cache.get(userToPing.serverId);
+    const member = await server.members.fetch(userToPing.userId);
+    addUserAndAddChannelIfNotExist(userToPingByChannel, channel, member);
+  }
+  return userToPingByChannel;
+}
 
-function stringWithoutFormatting(string) {
-  return string.substring(2, string.length - 2);
+function addUserAndAddChannelIfNotExist(userToPingByChannel, channel, member) {
+  const channelToEdit = getChannelIfExist(userToPingByChannel, channel);
+  if (channelToEdit) {
+    channelToEdit.user.push(member.toString());
+  } else {
+    userToPingByChannel.push({
+      channel: channel,
+      user: [member.toString()],
+    });
+  }
+}
+
+function getChannelIfExist(userToPingByChannel, channel) {
+  return userToPingByChannel.find(
+    (userChannel) => userChannel.channel.id === channel.id
+  );
 }

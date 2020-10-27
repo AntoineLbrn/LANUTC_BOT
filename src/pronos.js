@@ -1,6 +1,6 @@
 const messages = require("../static/messages");
 const apiGoogle = require("./apiGoogle");
-
+const apiGoogleUtils = require("../utils/apiGoogleUtils");
 const MATCH_DAY_LINE_INDEX = 0;
 const TEAM_NAME_LINE_INDEX = 1;
 const FIRST_PRONOSTIQUEUR_LINE = 3;
@@ -15,7 +15,49 @@ module.exports = {
   getStatisticsOfCurrentDay: getStatisticsOfCurrentDay,
   getStatisticsOfCurrentDayBO5: getStatisticsOfCurrentDayBO5,
   fillBO5Pronos: fillBO5Pronos,
+  getUsersWhoDidNotVote: getUsersWhoDidNotVote,
 };
+
+async function getUsersWhoDidNotVote() {
+  const matches = await getMatchesOfTheDay();
+  if (isThereAMatch(matches)) {
+    let users = [];
+    const tomorrow = getTomorrow();
+    const sheet = await apiGoogle.getSheet();
+    matches.forEach((match) => {
+      const matchColumn = getMatchColumn(sheet, tomorrow, match);
+      let i = 3;
+      while (
+        sheet.sheets[apiGoogleUtils.PRONO_SHEET.INDEX].data[0].rowData[i]
+      ) {
+        if (
+          isUserRow(sheet, i) &&
+          !hasVoted(sheet, i, matchColumn) &&
+          isActiveUser(sheet, i)
+        ) {
+          users.push({
+            userId:
+              sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i]
+                .values[apiGoogleUtils.USER_SHEET.IDS_INDEX].formattedValue,
+            serverId:
+              sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i]
+                .values[apiGoogleUtils.USER_SHEET.SERVER_ID_INDEX]
+                .formattedValue,
+            channelId: getChannelIdByServerId(
+              sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i]
+                .values[apiGoogleUtils.USER_SHEET.SERVER_ID_INDEX]
+                .formattedValue,
+              sheet
+            ),
+          });
+        }
+        i++;
+      }
+    });
+    return users;
+  }
+  return null;
+}
 
 async function getRank(user) {
   const leaderboard = await getAllUsersLeaderboard();
@@ -39,21 +81,25 @@ async function fillPronos(user, team1, team2, winner) {
   return result ? result : -2;
 }
 
-async function addPronostiqueur(user) {
+async function addPronostiqueur(user, server) {
   const sheet = await apiGoogle.getSheet();
+  const IDsSheets = sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0];
   let i = 3;
   while (
-    sheet.sheets[0].data[0].rowData[i] &&
-    sheet.sheets[0].data[0].rowData[i].values[0].formattedValue
+    IDsSheets.rowData[i] &&
+    IDsSheets.rowData[i].values[apiGoogleUtils.USER_SHEET.IDS_INDEX] &&
+    IDsSheets.rowData[i].values[apiGoogleUtils.USER_SHEET.IDS_INDEX]
+      .formattedValue
   ) {
     if (
-      sheet.sheets[0].data[0].rowData[i].values[0].formattedValue === user.tag
+      IDsSheets.rowData[i].values[apiGoogleUtils.USER_SHEET.IDS_INDEX]
+        .formattedValue === user.id
     ) {
       return -1;
     }
     i++;
   }
-  return apiGoogle.sendPronostiqueur(user, i);
+  return apiGoogle.sendPronostiqueur(user, i, server);
 }
 
 async function getLeaderboard(params) {
@@ -88,13 +134,13 @@ async function fillBO5Pronos(user, winningTeam, losingTeam, score) {
 async function getSpecificPronostiqueur(leaderboard, user) {
   leaderboard
     .sort(function (a, b) {
-      return parseFloat(a[1]) - parseFloat(b[1]);
+      return parseFloat(a[2]) - parseFloat(b[2]);
     })
     .reverse();
   let i = 0;
   for (i; i < leaderboard.length; i++) {
-    if (leaderboard[i][0][0] === user.tag) {
-      return [i + 1, leaderboard[i][1][0]];
+    if (leaderboard[i][0][0] === user.id) {
+      return [i + 1, leaderboard[i][2][0]];
     }
   }
   return messages.NOT_A_PRONOSTIQUEUR;
@@ -103,14 +149,27 @@ async function getSpecificPronostiqueur(leaderboard, user) {
 async function getAllUsersLeaderboard() {
   const leaderboard = [];
   const sheet = await apiGoogle.getSheet();
+  const pronoSheet = sheet.sheets[apiGoogleUtils.PRONO_SHEET.INDEX].data[0];
+  const IDsSheet = sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0];
   let i = 3;
   while (
-    sheet.sheets[0].data[0].rowData[i] &&
-    sheet.sheets[0].data[0].rowData[i].values[0].formattedValue
+    pronoSheet.rowData[i] &&
+    pronoSheet.rowData[i].values[apiGoogleUtils.PRONO_SHEET.TAG_INDEX]
+      .formattedValue
   ) {
     leaderboard.push([
-      [sheet.sheets[0].data[0].rowData[i].values[0].formattedValue],
-      [sheet.sheets[0].data[0].rowData[i].values[1].formattedValue],
+      [
+        IDsSheet.rowData[i].values[apiGoogleUtils.USER_SHEET.IDS_INDEX]
+          .formattedValue,
+      ],
+      [
+        pronoSheet.rowData[i].values[apiGoogleUtils.PRONO_SHEET.TAG_INDEX]
+          .formattedValue,
+      ],
+      [
+        pronoSheet.rowData[i].values[apiGoogleUtils.PRONO_SHEET.POINTS_INDEX]
+          .formattedValue,
+      ],
     ]);
     i++;
   }
@@ -120,7 +179,7 @@ async function getAllUsersLeaderboard() {
 async function getBestPronostiqueurs(leaderboard, params) {
   leaderboard
     .sort(function (a, b) {
-      return parseFloat(a[1]) - parseFloat(b[1]);
+      return parseFloat(a[2]) - parseFloat(b[2]);
     })
     .reverse();
   if (params[1] && params[1] > 0 && params[1] < 11) {
@@ -140,19 +199,19 @@ async function getBestPronostiqueurs(leaderboard, params) {
   }
   return (
     "**1er** : " +
-    leaderboard[0][0] +
-    " " +
     leaderboard[0][1] +
+    " " +
+    leaderboard[0][2] +
     " points\n" +
     "**2ème** : " +
-    leaderboard[1][0] +
-    " " +
     leaderboard[1][1] +
+    " " +
+    leaderboard[1][2] +
     " points\n" +
     "**3ème** : " +
-    leaderboard[2][0] +
-    " " +
     leaderboard[2][1] +
+    " " +
+    leaderboard[2][2] +
     " points"
   );
 }
@@ -179,7 +238,8 @@ function getNextDayColumn(values, currentDate) {
 }
 
 function getMatchColumn(sheet, date, match) {
-  const matches = sheet.sheets[0].data[0].rowData;
+  const matches =
+    sheet.sheets[apiGoogleUtils.PRONO_SHEET.INDEX].data[0].rowData;
   let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
   const nextDayColumnIndex = getNextDayColumn(
     matches[MATCH_DAY_LINE_INDEX].values,
@@ -200,9 +260,11 @@ function getMatchColumn(sheet, date, match) {
 
 async function getUserRow(sheet, user) {
   let i = 3;
-  while (sheet.sheets[0].data[0].rowData[i]) {
+  while (sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i]) {
     if (
-      sheet.sheets[0].data[0].rowData[i].values[0].formattedValue === user.tag
+      sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i].values[
+        apiGoogleUtils.USER_SHEET.IDS_INDEX
+      ].formattedValue === user.id
     ) {
       return i;
     }
@@ -265,7 +327,6 @@ function getMatchStatsticsAsString(matches, firstTeamColumn, secondTeamColumn) {
   let total = 0;
   let i = FIRST_PRONOSTIQUEUR_LINE;
   for (i; i < MAX_PRONOSTIQUEUR_STATS; i++) {
-    console.log(matches[i].values[firstTeamColumn]);
     if (matches[i].values[firstTeamColumn]) {
       if (matches[i].values[firstTeamColumn].formattedValue === "1") {
         total++;
@@ -432,4 +493,48 @@ function getToday() {
   const dd = String(today.getDate()).padStart(2, "0");
   const mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
   return dd + "/" + mm;
+}
+
+function isThereAMatch(matches) {
+  return matches[0][0];
+}
+
+function isUserRow(sheet, userRow) {
+  return (
+    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[userRow] &&
+    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[userRow]
+      .values[apiGoogleUtils.USER_SHEET.TAG_INDEX] &&
+    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[userRow]
+      .values[apiGoogleUtils.USER_SHEET.TAG_INDEX].formattedValue
+  );
+}
+
+function hasVoted(sheet, userRow, matchColumn) {
+  return (
+    sheet.sheets[apiGoogleUtils.PRONO_SHEET.INDEX].data[0].rowData[userRow]
+      .values[matchColumn] &&
+    sheet.sheets[apiGoogleUtils.PRONO_SHEET.INDEX].data[0].rowData[userRow]
+      .values[matchColumn].formattedValue
+  );
+}
+
+function isActiveUser(sheet, userRow) {
+  return (
+    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[userRow]
+      .values[apiGoogleUtils.USER_SHEET.IS_ACTIVE_INDEX].formattedValue ===
+    apiGoogleUtils.USER_SHEET.IS_ACTIVE_CODE
+  );
+}
+
+function getChannelIdByServerId(serverId, sheet) {
+  let i = 1;
+  while (
+    sheet.sheets[apiGoogleUtils.SERVER_SHEET.INDEX].data[0].rowData[i].values[
+      apiGoogleUtils.SERVER_SHEET.SERVER_ID_INDEX
+    ].formattedValue !== serverId
+  ) {
+    i++;
+  }
+  return sheet.sheets[apiGoogleUtils.SERVER_SHEET.INDEX].data[0].rowData[i]
+    .values[apiGoogleUtils.SERVER_SHEET.PRONOS_CHANNEL_ID_INDEX].formattedValue;
 }

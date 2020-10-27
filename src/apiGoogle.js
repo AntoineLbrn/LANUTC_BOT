@@ -1,4 +1,5 @@
 const config = require("../config/configuration");
+const apiGoogleUtils = require("../utils/apiGoogleUtils");
 const fetch = require("node-fetch");
 var TOKEN = null;
 
@@ -8,41 +9,53 @@ module.exports = {
   getSheet: getSheet,
 };
 
-async function sendPronostiqueur(user, row) {
+async function sendPronostiqueur(user, row, server) {
   await getToken();
-  const body = JSON.stringify({
-    requests: [
-      {
-        repeatCell: {
-          range: {
-            startColumnIndex: 0,
-            endColumnIndex: 1,
-            startRowIndex: row,
-            endRowIndex: row + 1,
-            sheetId: 0,
-          },
-          cell: {
-            userEnteredValue: {
-              stringValue: user.tag,
-            },
-          },
-          fields: "*",
-        },
-      },
-    ],
-  });
-  const response = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${config.SHEET_ID}:batchUpdate`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${TOKEN.access_token}`,
-      },
-      body: body,
-    }
+
+  //send user tag
+  const updateUserTagStatus = await updateCell(
+    apiGoogleUtils.PRONO_SHEET.ID,
+    apiGoogleUtils.PRONO_SHEET.TAG_INDEX,
+    row,
+    user.tag
   );
-  return response.status === 200 ? 0 : -2;
+  //send user id
+  const updateUserIdStatus = await updateCell(
+    apiGoogleUtils.USER_SHEET.ID,
+    apiGoogleUtils.USER_SHEET.IDS_INDEX,
+    row,
+    user.id
+  );
+  //send server name
+  const updateServerNameStatus = await updateCell(
+    apiGoogleUtils.USER_SHEET.ID,
+    apiGoogleUtils.USER_SHEET.SERVER_INDEX,
+    row,
+    server.name
+  );
+  //send serverID
+  const updateServerIdStatus = await updateCell(
+    apiGoogleUtils.USER_SHEET.ID,
+    apiGoogleUtils.USER_SHEET.SERVER_ID_INDEX,
+    row,
+    server.id
+  );
+  //set active code
+  const updateActiveUserStatus = await updateCell(
+    apiGoogleUtils.USER_SHEET.ID,
+    apiGoogleUtils.USER_SHEET.IS_ACTIVE_INDEX,
+    row,
+    apiGoogleUtils.USER_SHEET.IS_ACTIVE_CODE
+  );
+
+  return updateActiveUserStatus +
+    updateServerIdStatus +
+    updateServerNameStatus +
+    updateUserIdStatus +
+    updateUserTagStatus ===
+    0
+    ? 0
+    : -2;
 }
 
 async function sendProno(column, row, value, sheet) {
@@ -67,6 +80,42 @@ async function sendProno(column, row, value, sheet) {
           cell: {
             userEnteredValue: {
               numberValue: value,
+            },
+          },
+          fields: "*",
+        },
+      },
+    ],
+  });
+  const response = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${config.SHEET_ID}:batchUpdate`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TOKEN.access_token}`,
+      },
+      body: body,
+    }
+  );
+  return response.status === 200 ? 0 : -2;
+}
+
+async function updateCell(sheetId, column, row, value) {
+  const body = JSON.stringify({
+    requests: [
+      {
+        repeatCell: {
+          range: {
+            startColumnIndex: column,
+            endColumnIndex: column + 1,
+            startRowIndex: row,
+            endRowIndex: row + 1,
+            sheetId: sheetId,
+          },
+          cell: {
+            userEnteredValue: {
+              stringValue: value,
             },
           },
           fields: "*",
