@@ -16,8 +16,8 @@ module.exports = {
   },
   //Don't forget Heroku's server is 1 hours late from France
   VOTE_REMINDER: {
-    HOURS: 17,
-    MINUTES: 10,
+    HOURS: 19,
+    MINUTES: 0,
   },
   isBO5Vote: isBO5Vote,
   isBO1Vote: isBO1Vote,
