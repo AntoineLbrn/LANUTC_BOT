@@ -14,10 +14,10 @@ bot.on(botUtils.READY_CODE, () => {
 });
 
 schedule.scheduleJob(
-  {
-    hour: botUtils.VOTE_REMINDER.HOURS,
-    minutes: botUtils.VOTE_REMINDER.MINUTES,
-  },
+  botUtils.VOTE_REMINDER.MINUTES +
+    " " +
+    botUtils.VOTE_REMINDER.HOURS +
+    " * * *",
   () => {
     pronos.getUsersWhoDidNotVote().then((usersToPing) => {
       if (usersToPing) {
