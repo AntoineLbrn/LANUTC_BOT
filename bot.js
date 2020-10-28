@@ -8,6 +8,7 @@ const schedule = require("node-schedule");
 
 // Initialize Discord Bot
 var bot = new Discord.Client();
+let botSetUp = initializeBotSetUp();
 
 bot.on(botUtils.READY_CODE, () => {
   setActivity();
@@ -23,11 +24,20 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
     //admin only, check message.member to check it's not dm
     if (message.member && message.member.hasPermission("ADMINISTRATOR")) {
       switch (cmd) {
-        // !setuppronos
-        case botUtils.COMMANDS.SETUP_PRONOS:
+        // !setupBot
+        case botUtils.COMMANDS.SETUP_BOT:
+          message.channel.send(messages.SETUP_BOT_1);
+          botSetUp = initializeBotSetUp();
+          botSetUp.isWaitingForChannel = true;
+          botSetUp.channelFromCommandHasBeenCalled = message.channel;
+          botSetUp.server = message.channel.guild;
+          botSetUp.user = message.author;
+          break;
+        // !setupSubscription
+        case botUtils.COMMANDS.SETUP_SUBSCRIPTION:
           message.channel
-            .send(messages.SETUP_PRONOS)
-            .then((message) => message.react("✅"));
+            .send(messages.SETUP_SUBSCRIPTION)
+            .then((message) => message.react(botUtils.REACTIONS.VALIDATE));
           break;
         // !statistics
         case botUtils.COMMANDS.STATISTICS:
@@ -123,7 +133,7 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
           if (response === 0) {
             const role = getRoleByString(
               message,
-              config.PRONOSTIQUEUR_ROLE_AS_STRING
+              config.PRONOSTIQUEUR_ROLE_AS_STRING //TODO: get role from googleApi
             );
             const member = message.guild.members.cache.get(message.author.id);
             member.roles.remove(role);
@@ -156,6 +166,32 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
         });
         break;
     }
+  } else if (
+    botSetUp.isWaitingForChannel &&
+    hasUserTypedPronosChannel(message)
+  ) {
+    const channelId = stringWithOnlyDigits(message.content);
+    botSetUp.pronosChannel = getChannelByIdAndServer(
+      channelId,
+      botSetUp.server
+    );
+    botSetUp.isWaitingForChannel = false;
+    botSetUp.isWaitingForChannelValidation = true;
+    message.channel
+      .send(messages.SETUP_BOT_2 + "**" + botSetUp.pronosChannel.name + "**")
+      .then((messageFromBot) =>
+        messageFromBot.react(botUtils.REACTIONS.VALIDATE)
+      );
+  } else if (botSetUp.isWaitingForRole && hasUserTypedPronosRole(message)) {
+    const roleId = stringWithOnlyDigits(message.content);
+    botSetUp.pronosRole = getRoleByIdAndServer(roleId, botSetUp.server);
+    botSetUp.isWaitingForRole = false;
+    botSetUp.isWaitingForRoleValidation = true;
+    message.channel
+      .send(messages.SETUP_BOT_4 + "**" + botSetUp.pronosRole.name + "**")
+      .then((messageFromBot) =>
+        messageFromBot.react(botUtils.REACTIONS.VALIDATE)
+      );
   }
 });
 
@@ -183,10 +219,35 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
           user.send(messages.REGISTRATION_SUCCESS);
           const role = getRoleByString(
             message,
-            config.PRONOSTIQUEUR_ROLE_AS_STRING
+            config.PRONOSTIQUEUR_ROLE_AS_STRING //TODO: get role from googleApi
           );
           const memberWhoReacted = message.guild.members.cache.get(user.id);
           memberWhoReacted.roles.add(role);
+        }
+      });
+    } else if (
+      botSetUp.isWaitingForChannelValidation &&
+      botUtils.isValidatePronosChannelReaction(
+        user,
+        botSetUp.user,
+        message,
+        emoji
+      )
+    ) {
+      botSetUp.isWaitingForChannelValidation = false;
+      botSetUp.isWaitingForRole = true;
+      message.channel.send(messages.SETUP_BOT_3);
+    } else if (
+      botSetUp.isWaitingForRoleValidation &&
+      botUtils.isValidatePronosRoleReaction(user, botSetUp.user, message, emoji)
+    ) {
+      botSetUp.isWaitingForRoleValidation = false;
+      //TODO: edit prono_role and prono_channel permissions
+      pronos.sendSettings(botSetUp).then((statusCode) => {
+        if (statusCode === 0) {
+          message.channel.send(messages.SETUP_BOT_5);
+        } else {
+          message.channel.send(messages.GENERIC_ERROR);
         }
       });
     }
@@ -303,4 +364,48 @@ function getRoleByString(message, roleAsString) {
 
 function setActivity() {
   bot.user.setActivity(messages.BOT_ACTIVITY);
+}
+
+function getChannelByIdAndServer(channelId, server) {
+  return server.channels.cache.get(channelId);
+}
+
+function hasUserTypedPronosChannel(message) {
+  const channelId = stringWithOnlyDigits(message.content);
+  return (
+    message.channel.id === botSetUp.channelFromCommandHasBeenCalled.id &&
+    getChannelByIdAndServer(channelId, botSetUp.server) &&
+    botSetUp.user.id === message.author.id
+  );
+}
+
+function stringWithOnlyDigits(string) {
+  return string.replace(/\D/g, "");
+}
+
+function initializeBotSetUp() {
+  return {
+    server: null,
+    isWaitingForChannel: false,
+    channelFromCommandHasBeenCalled: null,
+    pronosChannel: null,
+    pronosRole: null,
+    user: null,
+    isWaitingForRole: false,
+    isWaitingForChannelValidation: false,
+    isWaitingForRoleValidation: false,
+  };
+}
+
+function hasUserTypedPronosRole(message) {
+  const roleId = stringWithOnlyDigits(message.content);
+  return (
+    message.channel.id === botSetUp.channelFromCommandHasBeenCalled.id &&
+    getRoleByIdAndServer(roleId, botSetUp.server) &&
+    botSetUp.user.id === message.author.id
+  );
+}
+
+function getRoleByIdAndServer(channelId, server) {
+  return server.roles.cache.get(channelId);
 }

@@ -8,7 +8,64 @@ module.exports = {
   sendProno: sendProno,
   getSheet: getSheet,
   unsubscribeUser: unsubscribeUser,
+  sendSettings: sendSettings,
 };
+
+async function sendSettings(botSetUp, row) {
+  await getToken();
+
+  const updateServerId = await updateCell(
+    apiGoogleUtils.SERVER_SHEET.ID,
+    apiGoogleUtils.SERVER_SHEET.SERVER_ID_INDEX,
+    row,
+    botSetUp.server.id
+  );
+
+  const updateServerName = await updateCell(
+    apiGoogleUtils.SERVER_SHEET.ID,
+    apiGoogleUtils.SERVER_SHEET.SERVER_NAME_INDEX,
+    row,
+    botSetUp.server.name
+  );
+
+  const updatePronosChannelName = await updateCell(
+    apiGoogleUtils.SERVER_SHEET.ID,
+    apiGoogleUtils.SERVER_SHEET.PRONOS_CHANNEL_NAME_INDEX,
+    row,
+    botSetUp.pronosChannel.name
+  );
+
+  const updatePronosChannelId = await updateCell(
+    apiGoogleUtils.SERVER_SHEET.ID,
+    apiGoogleUtils.SERVER_SHEET.PRONOS_CHANNEL_ID_INDEX,
+    row,
+    botSetUp.pronosChannel.id
+  );
+
+  const updatePronosRoleName = await updateCell(
+    apiGoogleUtils.SERVER_SHEET.ID,
+    apiGoogleUtils.SERVER_SHEET.PRONOS_ROLE_NAME_INDEX,
+    row,
+    botSetUp.pronosRole.name
+  );
+
+  const updatePronosRoleId = await updateCell(
+    apiGoogleUtils.SERVER_SHEET.ID,
+    apiGoogleUtils.SERVER_SHEET.PRONOS_ROLE_ID_INDEX,
+    row,
+    botSetUp.pronosRole.id
+  );
+
+  return updatePronosChannelId +
+    updatePronosChannelName +
+    updatePronosRoleId +
+    updatePronosRoleName +
+    updateServerId +
+    updateServerName ===
+    0
+    ? 0
+    : -2;
+}
 
 async function unsubscribeUser(row) {
   return await updateCell(

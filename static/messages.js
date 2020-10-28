@@ -1,5 +1,5 @@
 module.exports = {
-  SETUP_PRONOS: "Réagissez ✅ pour devenir pronostiqueur",
+  SETUP_SUBSCRIPTION: "Réagissez ✅ pour devenir pronostiqueur",
   HEADER_PRONO:
     "Voici les matchs de demain ! Bon courage pour vos pronos :D N'oubliez pas de pronostiquer tous les matchs",
   HEADER_PRONO_PLAYOFF:
@@ -23,4 +23,15 @@ module.exports = {
     "**help** : Affiche toutes les commandes disponibles. \n" +
     "**unsubscribe** : Vous désinscrit des pronostics, pour ne plus être tag. \n" +
     "**rank** : Affiche votre classement de pronostiqueur.",
+  SETUP_BOT_1:
+    "**Bienvenue dans l'interface de configuration du bot** \n\n" +
+    "[1/4] : Dans quel salon souhaitez-vous pronostiquer ? (avec le #) ",
+  SETUP_BOT_2:
+    "[2/4] : Confirmez-vous que vous souhaitez utiliser le channel suivant, sinon relancez !setupBot : ",
+  SETUP_BOT_3:
+    "[3/4] : Channel validé ! Renseignez à présent le rôle de pronostiqueur (avec le @) ",
+  SETUP_BOT_4:
+    "[4/4] : Confirmez-vous que vous souhaitez utiliser le rôle suivant, sinon relancez !setupBot : ",
+  SETUP_BOT_5:
+    "**Configuration terminée**, vous pouvez à présent utiliser la commande !setupSubscription",
 };

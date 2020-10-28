@@ -17,7 +17,13 @@ module.exports = {
   fillBO5Pronos: fillBO5Pronos,
   getUsersWhoDidNotVote: getUsersWhoDidNotVote,
   unsubscribeUser: unsubscribeUser,
+  sendSettings: sendSettings,
 };
+
+async function sendSettings(botSetUp) {
+  //TODO: check server is not set up yet and dynamically select row to update
+  return await apiGoogle.sendSettings(botSetUp, 3);
+}
 
 async function unsubscribeUser(user) {
   const sheet = await apiGoogle.getSheet();
