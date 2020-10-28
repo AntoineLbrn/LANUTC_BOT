@@ -15,4 +15,12 @@ module.exports = {
   STATISTICS_OF_THE_DAY: "Voici les statistiques du jour !",
   FORGOT_PRONOS: "Tu n'as pas rempli tes pronos :",
   UNSUBSCRIBED: "Tu as été désinscrit.e des pronostics !",
+  BOT_ACTIVITY: "!help pour la liste des commandes 😎",
+  NO_USERS_TO_PING: "no users to ping today",
+  HELP_MESSAGE:
+    "*Voici les commandes à votre disposition (n'oubliez pas le !)*\n\n" +
+    "**leaderboard [N]** : Affiche un classement des N premiers pronostiqueurs. \n" +
+    "**help** : Affiche toutes les commandes disponibles. \n" +
+    "**unsubscribe** : Vous désinscrit des pronostics, pour ne plus être tag. \n" +
+    "**rank** : Affiche votre classement de pronostiqueur.",
 };

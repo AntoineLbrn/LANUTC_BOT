@@ -14,6 +14,7 @@ module.exports = {
     LEADERBOARD: "leaderboard",
     RANK: "rank",
     UNSUBSCRIBE: "unsubscribe",
+    HELP: "help",
   },
   //Don't forget Heroku's server is 1 hours late from France
   VOTE_REMINDER: {

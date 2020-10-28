@@ -10,10 +10,9 @@ const schedule = require("node-schedule");
 var bot = new Discord.Client();
 
 bot.on(botUtils.READY_CODE, () => {
-  console.log("I am ready!");
+  setActivity();
+  startCronReminder();
 });
-
-startCronReminder();
 
 bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
   // Our bot needs to know if it will execute a command
@@ -113,6 +112,10 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
       //!leaderboard [N]
       case botUtils.COMMANDS.LEADERBOARD:
         message.channel.send(await pronos.getLeaderboard(params));
+        break;
+      //!help
+      case botUtils.COMMANDS.HELP:
+        message.channel.send(messages.HELP_MESSAGE);
         break;
       //!unsubscribe
       case botUtils.COMMANDS.UNSUBSCRIBE:
@@ -287,7 +290,7 @@ function startCronReminder() {
             });
           });
         } else {
-          console.log("no users to ping today");
+          console.log(messages.NO_USERS_TO_PING);
         }
       });
     }
@@ -296,4 +299,8 @@ function startCronReminder() {
 
 function getRoleByString(message, roleAsString) {
   return message.guild.roles.cache.find((role) => role.name === roleAsString);
+}
+
+function setActivity() {
+  bot.user.setActivity(messages.BOT_ACTIVITY);
 }
