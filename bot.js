@@ -278,7 +278,7 @@ function startCronReminder() {
       " * * *",
     () => {
       pronos.getUsersWhoDidNotVote().then((usersToPing) => {
-        if (usersToPing) {
+        if (usersToPing && usersToPing.length) {
           getUserToPingByChannel(usersToPing).then((userToPingByChannel) => {
             userToPingByChannel.forEach((userChannel) => {
               userChannel.channel.send(
@@ -286,6 +286,8 @@ function startCronReminder() {
               );
             });
           });
+        } else {
+          console.log("no users to ping today");
         }
       });
     }
