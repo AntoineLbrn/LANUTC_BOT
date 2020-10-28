@@ -14,6 +14,7 @@ module.exports = {
     SERVER_ID_INDEX: 3,
     IS_ACTIVE_INDEX: 4,
     IS_ACTIVE_CODE: "1",
+    IS_INACTIVE_CODE: "0",
   },
   SERVER_SHEET: {
     INDEX: 2,

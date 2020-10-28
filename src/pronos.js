@@ -16,8 +16,17 @@ module.exports = {
   getStatisticsOfCurrentDayBO5: getStatisticsOfCurrentDayBO5,
   fillBO5Pronos: fillBO5Pronos,
   getUsersWhoDidNotVote: getUsersWhoDidNotVote,
+  unsubscribeUser: unsubscribeUser,
 };
 
+async function unsubscribeUser(user) {
+  const sheet = await apiGoogle.getSheet();
+  const row = getUserRow(sheet, user);
+  if (row < 0) {
+    return row;
+  }
+  return await apiGoogle.unsubscribeUser(row);
+}
 async function getUsersWhoDidNotVote() {
   const matches = await getMatchesOfTheDay();
   if (isThereAMatch(matches)) {
@@ -258,7 +267,7 @@ function getMatchColumn(sheet, date, match) {
   }
 }
 
-async function getUserRow(sheet, user) {
+function getUserRow(sheet, user) {
   let i = 3;
   while (sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i]) {
     if (

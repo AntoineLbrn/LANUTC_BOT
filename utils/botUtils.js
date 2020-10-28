@@ -13,6 +13,7 @@ module.exports = {
     PRONOS_BO5: "pronosBO5",
     LEADERBOARD: "leaderboard",
     RANK: "rank",
+    UNSUBSCRIBE: "unsubscribe",
   },
   //Don't forget Heroku's server is 1 hours late from France
   VOTE_REMINDER: {

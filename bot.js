@@ -13,25 +13,7 @@ bot.on(botUtils.READY_CODE, () => {
   console.log("I am ready!");
 });
 
-schedule.scheduleJob(
-  botUtils.VOTE_REMINDER.MINUTES +
-    " " +
-    botUtils.VOTE_REMINDER.HOURS +
-    " * * *",
-  () => {
-    pronos.getUsersWhoDidNotVote().then((usersToPing) => {
-      if (usersToPing) {
-        getUserToPingByChannel(usersToPing).then((userToPingByChannel) => {
-          userToPingByChannel.forEach((userChannel) => {
-            userChannel.channel.send(
-              messages.FORGOT_PRONOS + " " + userChannel.user.join()
-            );
-          });
-        });
-      }
-    });
-  }
-);
+startCronReminder();
 
 bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
   // Our bot needs to know if it will execute a command
@@ -132,6 +114,24 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
       case botUtils.COMMANDS.LEADERBOARD:
         message.channel.send(await pronos.getLeaderboard(params));
         break;
+      //!unsubscribe
+      case botUtils.COMMANDS.UNSUBSCRIBE:
+        await pronos.unsubscribeUser(message.author).then((response) => {
+          if (response === 0) {
+            const role = getRoleByString(
+              message,
+              config.PRONOSTIQUEUR_ROLE_AS_STRING
+            );
+            const member = message.guild.members.cache.get(message.author.id);
+            member.roles.remove(role);
+            message.author.send(messages.UNSUBSCRIBED);
+          } else if (response === -3) {
+            message.author.send(messages.NOT_A_PRONOSTIQUEUR);
+          } else {
+            message.author.send(messages.GENERIC_ERROR);
+          }
+        });
+        break;
       //!rank
       case botUtils.COMMANDS.RANK:
         pronos.getRank(message.author).then((rank) => {
@@ -178,8 +178,9 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
           user.send(messages.PRONOSTIQUEUR_ALREADY_REGISTERED);
         } else {
           user.send(messages.REGISTRATION_SUCCESS);
-          const role = message.guild.roles.cache.find(
-            (role) => role.name === config.PRONOSTIQUEUR_ROLE_AS_STRING
+          const role = getRoleByString(
+            message,
+            config.PRONOSTIQUEUR_ROLE_AS_STRING
           );
           const memberWhoReacted = message.guild.members.cache.get(user.id);
           memberWhoReacted.roles.add(role);
@@ -267,4 +268,30 @@ function getChannelIfExist(userToPingByChannel, channel) {
   return userToPingByChannel.find(
     (userChannel) => userChannel.channel.id === channel.id
   );
+}
+
+function startCronReminder() {
+  schedule.scheduleJob(
+    botUtils.VOTE_REMINDER.MINUTES +
+      " " +
+      botUtils.VOTE_REMINDER.HOURS +
+      " * * *",
+    () => {
+      pronos.getUsersWhoDidNotVote().then((usersToPing) => {
+        if (usersToPing) {
+          getUserToPingByChannel(usersToPing).then((userToPingByChannel) => {
+            userToPingByChannel.forEach((userChannel) => {
+              userChannel.channel.send(
+                messages.FORGOT_PRONOS + " " + userChannel.user.join()
+              );
+            });
+          });
+        }
+      });
+    }
+  );
+}
+
+function getRoleByString(message, roleAsString) {
+  return message.guild.roles.cache.find((role) => role.name === roleAsString);
 }

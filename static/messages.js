@@ -13,5 +13,6 @@ module.exports = {
   PRONOSTIQUEUR_ALREADY_REGISTERED: "Tu es déjà inscrit, gros malin !",
   REGISTRATION_SUCCESS: "Ton inscription est validée ! Bravo :D",
   STATISTICS_OF_THE_DAY: "Voici les statistiques du jour !",
-  FORGOT_PRONOS: "Vous n'avez pas rempli vos pronos :",
+  FORGOT_PRONOS: "Tu n'as pas rempli tes pronos :",
+  UNSUBSCRIBED: "Tu as été désinscrit.e des pronostics !",
 };

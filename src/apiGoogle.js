@@ -7,8 +7,17 @@ module.exports = {
   sendPronostiqueur: sendPronostiqueur,
   sendProno: sendProno,
   getSheet: getSheet,
+  unsubscribeUser: unsubscribeUser,
 };
 
+async function unsubscribeUser(row) {
+  return await updateCell(
+    apiGoogleUtils.USER_SHEET.ID,
+    apiGoogleUtils.USER_SHEET.IS_ACTIVE_INDEX,
+    row,
+    apiGoogleUtils.USER_SHEET.IS_INACTIVE_CODE
+  );
+}
 async function sendPronostiqueur(user, row, server) {
   await getToken();
 
