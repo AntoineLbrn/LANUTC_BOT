@@ -243,7 +243,7 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
       botUtils.isValidatePronosRoleReaction(user, botSetUp.user, message, emoji)
     ) {
       botSetUp.isWaitingForRoleValidation = false;
-      //TODO: edit prono_role and prono_channel permissions
+      setupChannelAndRolePermissions(botSetUp);
       pronos.sendSettings(botSetUp).then((statusCode) => {
         if (statusCode === 0) {
           message.channel.send(messages.SETUP_BOT_5);
@@ -408,4 +408,18 @@ function hasUserTypedPronosRole(message) {
 
 function getRoleByIdAndServer(channelId, server) {
   return server.roles.cache.get(channelId);
+}
+
+function setupChannelAndRolePermissions(botSetUp) {
+  botSetUp.pronosChannel.overwritePermissions([
+    {
+      id: botSetUp.server.id,
+      deny: ["VIEW_CHANNEL"],
+    },
+    {
+      id: botSetUp.pronosRole.id,
+      allow: ["VIEW_CHANNEL"],
+      deny: ["SEND_MESSAGES", "ADD_REACTIONS"],
+    },
+  ]);
 }
