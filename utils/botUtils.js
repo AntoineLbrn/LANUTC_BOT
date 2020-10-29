@@ -48,10 +48,11 @@ function isValidatePronosRoleReaction(
   message,
   emoji
 ) {
-  return (userWhoReacted.id =
-    userWhoShouldReact.id &&
+  return (
+    userWhoReacted.id === userWhoShouldReact.id &&
     message.content.startsWith(messages.SETUP_BOT_4) &&
-    emoji.name === "✅");
+    emoji.name === "✅"
+  );
 }
 function isValidatePronosChannelReaction(
   userWhoReacted,
@@ -59,10 +60,11 @@ function isValidatePronosChannelReaction(
   message,
   emoji
 ) {
-  return (userWhoReacted.id =
-    userWhoShouldReact.id &&
+  return (
+    userWhoReacted.id === userWhoShouldReact.id &&
     message.content.startsWith(messages.SETUP_BOT_2) &&
-    emoji.name === "✅");
+    emoji.name === "✅"
+  );
 }
 function isSetupMessageReaction(user, message, emoji) {
   return (

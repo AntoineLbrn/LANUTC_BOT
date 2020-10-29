@@ -199,9 +199,10 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
   const message = reaction.message;
   const emoji = reaction.emoji;
   if (!user.bot && message.author.id === config.BOT_ID) {
+    reaction.users.remove(user.id);
     const vote = message.content.split(" ");
-    //BO5 vote
     const score = botUtils.getEmojiAsNumber(emoji.name);
+    //BO5 vote
     if (!(vote && vote[1])) {
       return;
     } else if (botUtils.isBO5Vote(vote)) {
@@ -251,9 +252,6 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
         }
       });
     }
-    message.channel.messages.fetch(message.id).then((messageEmbed) => {
-      messageEmbed.reactions.resolve(reaction).users.remove(user);
-    });
   }
 });
 
