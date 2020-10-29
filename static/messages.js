@@ -10,6 +10,10 @@ module.exports = {
   VOTE_RECEIVED: "**Vote enregistré** : ",
   BEATS: " bat ",
   FOR: " pour ",
+  COULD_NOT_REMOVE_ROLE:
+    "Je n'ai pas pu te retirer le rôle... Contacte un admin !",
+  ROLE_HAS_NOT_BEEN_DEFINED:
+    "Je n'ai pas pu t'ajouter le rôle car il n'existe pas... Contacte un admin !",
   PRONOSTIQUEUR_ALREADY_REGISTERED: "Tu es déjà inscrit, gros malin !",
   REGISTRATION_SUCCESS: "Ton inscription est validée ! Bravo :D",
   STATISTICS_OF_THE_DAY: "Voici les statistiques du jour !",

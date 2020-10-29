@@ -18,7 +18,18 @@ module.exports = {
   getUsersWhoDidNotVote: getUsersWhoDidNotVote,
   unsubscribeUser: unsubscribeUser,
   sendSettings: sendSettings,
+  getPronoRoleId: getPronoRoleId,
 };
+
+async function getPronoRoleId(server) {
+  const sheet = await apiGoogle.getSheet();
+  const row = getServerRow(sheet, server);
+  if (row < 0) {
+    return row;
+  }
+  return sheet.sheets[apiGoogleUtils.SERVER_SHEET.INDEX].data[0].rowData[row]
+    .values[apiGoogleUtils.SERVER_SHEET.PRONOS_ROLE_ID_INDEX].formattedValue;
+}
 
 async function sendSettings(botSetUp) {
   const sheet = await apiGoogle.getSheet();
@@ -311,6 +322,24 @@ function getAvailableServerRowIfServerDoesNotExist(sheet, server) {
     i++;
   }
   return i;
+}
+
+function getServerRow(sheet, server) {
+  let i = 1;
+  while (
+    sheet.sheets[apiGoogleUtils.SERVER_SHEET.INDEX].data[0].rowData[i] &&
+    sheet.sheets[apiGoogleUtils.SERVER_SHEET.INDEX].data[0].rowData[i].values
+  ) {
+    if (
+      sheet.sheets[apiGoogleUtils.SERVER_SHEET.INDEX].data[0].rowData[i].values[
+        apiGoogleUtils.SERVER_SHEET.SERVER_ID_INDEX
+      ].formattedValue === server.id
+    ) {
+      return i;
+    }
+    i++;
+  }
+  return -3;
 }
 
 async function addBO5Prono(tomorrow, match, user, score, winnerIsFirstTeam) {

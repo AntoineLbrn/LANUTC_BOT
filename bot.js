@@ -131,13 +131,22 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
       case botUtils.COMMANDS.UNSUBSCRIBE:
         await pronos.unsubscribeUser(message.author).then((response) => {
           if (response === 0) {
-            const role = getRoleByString(
-              message,
-              config.PRONOSTIQUEUR_ROLE_AS_STRING //TODO: get role from googleApi
-            );
-            const member = message.guild.members.cache.get(message.author.id);
-            member.roles.remove(role);
-            message.author.send(messages.UNSUBSCRIBED);
+            pronos.getPronoRoleId(message.guild).then((pronosRoleId) => {
+              if (pronosRoleId > 0) {
+                const pronosRole = getRoleByIdAndServer(
+                  pronosRoleId,
+                  message.guild
+                );
+                const member = getMemberByIdAndServer(
+                  message.author.id,
+                  message.guild
+                );
+                member.roles.remove(pronosRole);
+                message.author.send(messages.UNSUBSCRIBED);
+              } else {
+                message.author.send(messages.GENERIC_ERROR);
+              }
+            });
           } else if (response === -3) {
             message.author.send(messages.NOT_A_PRONOSTIQUEUR);
           } else {
@@ -152,8 +161,9 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
           let user;
           //If message is sent on a server
           if (message.guild) {
-            user = message.guild.members.cache.get(message.author.id).user;
-            username = message.guild.members.cache.get(message.author.id)
+            user = getMemberByIdAndServer(message.author.id, message.guild)
+              .user;
+            username = getMemberByIdAndServer(message.author.id, message.guild)
               .displayName;
             //If message is a private message
           } else {
@@ -217,13 +227,19 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
         } else if (response === -1) {
           user.send(messages.PRONOSTIQUEUR_ALREADY_REGISTERED);
         } else {
-          user.send(messages.REGISTRATION_SUCCESS);
-          const role = getRoleByString(
-            message,
-            config.PRONOSTIQUEUR_ROLE_AS_STRING //TODO: get role from googleApi
-          );
-          const memberWhoReacted = message.guild.members.cache.get(user.id);
-          memberWhoReacted.roles.add(role);
+          pronos.getPronoRoleId(message.guild).then((pronosRoleId) => {
+            if (pronosRoleId > 0) {
+              const pronosRole = getRoleByIdAndServer(
+                pronosRoleId,
+                message.guild
+              );
+              const member = getMemberByIdAndServer(user.id, message.guild);
+              member.roles.add(pronosRole);
+              user.send(messages.REGISTRATION_SUCCESS);
+            } else {
+              user.send(messages.ROLE_HAS_NOT_BEEN_DEFINED);
+            }
+          });
         }
       });
     } else if (
@@ -358,10 +374,6 @@ function startCronReminder() {
   );
 }
 
-function getRoleByString(message, roleAsString) {
-  return message.guild.roles.cache.find((role) => role.name === roleAsString);
-}
-
 function setActivity() {
   bot.user.setActivity(messages.BOT_ACTIVITY);
 }
@@ -406,8 +418,8 @@ function hasUserTypedPronosRole(message) {
   );
 }
 
-function getRoleByIdAndServer(channelId, server) {
-  return server.roles.cache.get(channelId);
+function getRoleByIdAndServer(roleId, server) {
+  return server.roles.cache.get(roleId);
 }
 
 function setupChannelAndRolePermissions(botSetUp) {
@@ -422,4 +434,8 @@ function setupChannelAndRolePermissions(botSetUp) {
       deny: ["SEND_MESSAGES", "ADD_REACTIONS"],
     },
   ]);
+}
+
+function getMemberByIdAndServer(memberId, server) {
+  return server.members.cache.get(memberId);
 }
