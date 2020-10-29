@@ -21,7 +21,6 @@ module.exports = {
 };
 
 async function sendSettings(botSetUp) {
-  //TODO: check server is not set up yet and dynamically select row to update
   const sheet = await apiGoogle.getSheet();
   const row = getAvailableServerRowIfServerDoesNotExist(sheet, botSetUp.server);
   if (row === -3) {
