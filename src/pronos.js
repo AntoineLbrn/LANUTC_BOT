@@ -22,7 +22,12 @@ module.exports = {
 
 async function sendSettings(botSetUp) {
   //TODO: check server is not set up yet and dynamically select row to update
-  return await apiGoogle.sendSettings(botSetUp, 3);
+  const sheet = await apiGoogle.getSheet();
+  const row = getAvailableServerRowIfServerDoesNotExist(sheet, botSetUp.server);
+  if (row === -3) {
+    return row;
+  }
+  return await apiGoogle.sendSettings(botSetUp, row);
 }
 
 async function unsubscribeUser(user) {
@@ -275,7 +280,10 @@ function getMatchColumn(sheet, date, match) {
 
 function getUserRow(sheet, user) {
   let i = 3;
-  while (sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i]) {
+  while (
+    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i] &&
+    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i].values
+  ) {
     if (
       sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i].values[
         apiGoogleUtils.USER_SHEET.IDS_INDEX
@@ -286,6 +294,24 @@ function getUserRow(sheet, user) {
     i++;
   }
   return -3;
+}
+
+function getAvailableServerRowIfServerDoesNotExist(sheet, server) {
+  let i = 1;
+  while (
+    sheet.sheets[apiGoogleUtils.SERVER_SHEET.INDEX].data[0].rowData[i] &&
+    sheet.sheets[apiGoogleUtils.SERVER_SHEET.INDEX].data[0].rowData[i].values
+  ) {
+    if (
+      sheet.sheets[apiGoogleUtils.SERVER_SHEET.INDEX].data[0].rowData[i].values[
+        apiGoogleUtils.SERVER_SHEET.SERVER_ID_INDEX
+      ].formattedValue === server.id
+    ) {
+      return -3;
+    }
+    i++;
+  }
+  return i;
 }
 
 async function addBO5Prono(tomorrow, match, user, score, winnerIsFirstTeam) {

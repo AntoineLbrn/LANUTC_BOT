@@ -23,6 +23,7 @@ module.exports = {
     "**help** : Affiche toutes les commandes disponibles. \n" +
     "**unsubscribe** : Vous désinscrit des pronostics, pour ne plus être tag. \n" +
     "**rank** : Affiche votre classement de pronostiqueur.",
+  SERVER_ALREADY_SET_UP: "Ce serveur est déjà configuré.",
   SETUP_BOT_1:
     "**Bienvenue dans l'interface de configuration du bot** \n\n" +
     "[1/4] : Dans quel salon souhaitez-vous pronostiquer ? (avec le #) ",

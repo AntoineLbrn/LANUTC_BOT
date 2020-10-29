@@ -247,6 +247,8 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
       pronos.sendSettings(botSetUp).then((statusCode) => {
         if (statusCode === 0) {
           message.channel.send(messages.SETUP_BOT_5);
+        } else if (statusCode === -3) {
+          message.channel.send(messages.SERVER_ALREADY_SET_UP);
         } else {
           message.channel.send(messages.GENERIC_ERROR);
         }
