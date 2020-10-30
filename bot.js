@@ -8,7 +8,7 @@ const schedule = require("node-schedule");
 
 // Initialize Discord Bot
 var bot = new Discord.Client();
-let botSetUp = initializeBotSetUp();
+let botSetUp = botUtils.initializeBotSetUp();
 
 bot.on(botUtils.READY_CODE, () => {
   setActivity();
@@ -16,22 +16,18 @@ bot.on(botUtils.READY_CODE, () => {
 });
 
 bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
-  // Our bot needs to know if it will execute a command
-  // It will listen for messages that will start with `!`
-  if (message.content.substring(0, 1) === "!") {
+  if (botUtils.isMessageContentACommand(message.content)) {
     const cmd = message.content.substring(1);
     const params = cmd.split(" ");
     //admin only, check message.member to check it's not dm
-    if (message.member && message.member.hasPermission("ADMINISTRATOR")) {
+    if (
+      botUtils.isNotDirectMessage(message) &&
+      botUtils.isMemberAdministrator(message.member)
+    ) {
       switch (cmd) {
         // !setupBot
         case botUtils.COMMANDS.SETUP_BOT:
-          message.channel.send(messages.SETUP_BOT_1);
-          botSetUp = initializeBotSetUp();
-          botSetUp.isWaitingForChannel = true;
-          botSetUp.channelFromCommandHasBeenCalled = message.channel;
-          botSetUp.server = message.channel.guild;
-          botSetUp.user = message.author;
+          botUtils.setupBotStep1(message, botSetUp);
           break;
         // !setupSubscription
         case botUtils.COMMANDS.SETUP_SUBSCRIPTION:
@@ -57,14 +53,7 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
         case botUtils.COMMANDS.PRONOS_BO1: {
           message.channel.send(messages.HEADER_PRONO);
           await pronos.getMatchesOfTheDay().then((matches) => {
-            matches.forEach((match) => {
-              message.channel
-                .send("** :one: " + match[0] + " vs :two: " + match[1] + " **")
-                .then((prono) => {
-                  prono.react("1️⃣");
-                  prono.react("2️⃣");
-                });
-            });
+            printBO1(matches, message);
           });
           break;
         }
@@ -72,47 +61,7 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
         case botUtils.COMMANDS.PRONOS_BO5: {
           message.channel.send(messages.HEADER_PRONO_PLAYOFF);
           await pronos.getMatchesOfTheDay().then((BO5matches) => {
-            BO5matches.forEach((match) => {
-              message.channel.send(
-                "**" +
-                  match[0] +
-                  " vs " +
-                  match[1] +
-                  "**, Un seul choix possible :"
-              );
-              message.channel
-                .send(
-                  "**" +
-                    match[0] +
-                    "**" +
-                    messages.BEATS +
-                    "**" +
-                    match[1] +
-                    "** " +
-                    " \n3-0 : 0️⃣\n3-1  : 1️⃣\n3-2 : 2️⃣\n"
-                )
-                .then((prono) => {
-                  prono.react("0️⃣");
-                  prono.react("1️⃣");
-                  prono.react("2️⃣");
-                });
-              message.channel
-                .send(
-                  "\n**" +
-                    match[1] +
-                    "**" +
-                    messages.BEATS +
-                    "**" +
-                    match[0] +
-                    "** " +
-                    " \n3-0 : 0️⃣\n3-1  : 1️⃣\n3-2 : 2️⃣"
-                )
-                .then((prono) => {
-                  prono.react("0️⃣");
-                  prono.react("1️⃣");
-                  prono.react("2️⃣");
-                });
-            });
+            printBO5(BO5matches, message);
           });
           break;
         }
@@ -133,11 +82,11 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
           if (response === 0) {
             pronos.getPronoRoleId(message.guild).then((pronosRoleId) => {
               if (pronosRoleId > 0) {
-                const pronosRole = getRoleByIdAndServer(
+                const pronosRole = botUtils.getRoleByIdAndServer(
                   pronosRoleId,
                   message.guild
                 );
-                const member = getMemberByIdAndServer(
+                const member = botUtils.getMemberByIdAndServer(
                   message.author.id,
                   message.guild
                 );
@@ -161,10 +110,14 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
           let user;
           //If message is sent on a server
           if (message.guild) {
-            user = getMemberByIdAndServer(message.author.id, message.guild)
-              .user;
-            username = getMemberByIdAndServer(message.author.id, message.guild)
-              .displayName;
+            user = botUtils.getMemberByIdAndServer(
+              message.author.id,
+              message.guild
+            ).user;
+            username = botUtils.getMemberByIdAndServer(
+              message.author.id,
+              message.guild
+            ).displayName;
             //If message is a private message
           } else {
             user = message.author;
@@ -180,40 +133,20 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
     botSetUp.isWaitingForChannel &&
     hasUserTypedPronosChannel(message)
   ) {
-    const channelId = stringWithOnlyDigits(message.content);
-    botSetUp.pronosChannel = getChannelByIdAndServer(
-      channelId,
-      botSetUp.server
-    );
-    botSetUp.isWaitingForChannel = false;
-    botSetUp.isWaitingForChannelValidation = true;
-    message.channel
-      .send(messages.SETUP_BOT_2 + "**" + botSetUp.pronosChannel.name + "**")
-      .then((messageFromBot) =>
-        messageFromBot.react(botUtils.REACTIONS.VALIDATE)
-      );
+    botUtils.setupBotStep2(message, botSetUp);
   } else if (botSetUp.isWaitingForRole && hasUserTypedPronosRole(message)) {
-    const roleId = stringWithOnlyDigits(message.content);
-    botSetUp.pronosRole = getRoleByIdAndServer(roleId, botSetUp.server);
-    botSetUp.isWaitingForRole = false;
-    botSetUp.isWaitingForRoleValidation = true;
-    message.channel
-      .send(messages.SETUP_BOT_4 + "**" + botSetUp.pronosRole.name + "**")
-      .then((messageFromBot) =>
-        messageFromBot.react(botUtils.REACTIONS.VALIDATE)
-      );
+    botUtils.setupBotStep4(message, botSetUp);
   }
 });
 
 bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
   const message = reaction.message;
   const emoji = reaction.emoji;
-  if (!user.bot && message.author.id === config.BOT_ID) {
+  if (!user.bot && botUtils.isBotMessageAuthor(message)) {
     reaction.users.remove(user.id);
     const vote = message.content.split(" ");
     const score = botUtils.getEmojiAsNumber(emoji.name);
-    //BO5 vote
-    if (!(vote && vote[1])) {
+    if (botUtils.isEmptyMessage(vote)) {
       return;
     } else if (botUtils.isBO5Vote(vote)) {
       handleBO5Reaction(score, user, vote);
@@ -229,11 +162,14 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
         } else {
           pronos.getPronoRoleId(message.guild).then((pronosRoleId) => {
             if (pronosRoleId > 0) {
-              const pronosRole = getRoleByIdAndServer(
+              const pronosRole = botUtils.getRoleByIdAndServer(
                 pronosRoleId,
                 message.guild
               );
-              const member = getMemberByIdAndServer(user.id, message.guild);
+              const member = botUtils.getMemberByIdAndServer(
+                user.id,
+                message.guild
+              );
               member.roles.add(pronosRole);
               user.send(messages.REGISTRATION_SUCCESS);
             } else {
@@ -251,15 +187,12 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
         emoji
       )
     ) {
-      botSetUp.isWaitingForChannelValidation = false;
-      botSetUp.isWaitingForRole = true;
-      message.channel.send(messages.SETUP_BOT_3);
+      botUtils.setupBotStep3(message, botSetUp);
     } else if (
       botSetUp.isWaitingForRoleValidation &&
       botUtils.isValidatePronosRoleReaction(user, botSetUp.user, message, emoji)
     ) {
-      botSetUp.isWaitingForRoleValidation = false;
-      setupChannelAndRolePermissions(botSetUp);
+      botUtils.setupChannelAndRolePermissions(botSetUp);
       pronos.sendSettings(botSetUp).then((statusCode) => {
         if (statusCode === 0) {
           message.channel.send(messages.SETUP_BOT_5);
@@ -268,6 +201,7 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
         } else {
           message.channel.send(messages.GENERIC_ERROR);
         }
+        botUtils.initializeBotSetUp();
       });
     }
   }
@@ -302,6 +236,7 @@ function handleBO1Reaction(score, user, vote, emoji) {
     });
   }
 }
+
 function handleBO5Reaction(score, user, vote) {
   const winningTeam = botUtils.teamNameWithoutFormatting(vote[0]);
   const losingTeam = botUtils.teamNameWithoutFormatting(vote[2]);
@@ -321,33 +256,20 @@ function handleBO5Reaction(score, user, vote) {
       }
     });
 }
+
 async function getUserToPingByChannel(usersToPing) {
   let userToPingByChannel = [];
   for (const userToPing of usersToPing) {
     const channel = bot.channels.cache.get(userToPing.channelId);
     const server = bot.guilds.cache.get(userToPing.serverId);
     const member = await server.members.fetch(userToPing.userId);
-    addUserAndAddChannelIfNotExist(userToPingByChannel, channel, member);
+    botUtils.addUserAndAddChannelIfNotExist(
+      userToPingByChannel,
+      channel,
+      member
+    );
   }
   return userToPingByChannel;
-}
-
-function addUserAndAddChannelIfNotExist(userToPingByChannel, channel, member) {
-  const channelToEdit = getChannelIfExist(userToPingByChannel, channel);
-  if (channelToEdit) {
-    channelToEdit.user.push(member.toString());
-  } else {
-    userToPingByChannel.push({
-      channel: channel,
-      user: [member.toString()],
-    });
-  }
-}
-
-function getChannelIfExist(userToPingByChannel, channel) {
-  return userToPingByChannel.find(
-    (userChannel) => userChannel.channel.id === channel.id
-  );
 }
 
 function startCronReminder() {
@@ -378,64 +300,71 @@ function setActivity() {
   bot.user.setActivity(messages.BOT_ACTIVITY);
 }
 
-function getChannelByIdAndServer(channelId, server) {
-  return server.channels.cache.get(channelId);
-}
-
 function hasUserTypedPronosChannel(message) {
-  const channelId = stringWithOnlyDigits(message.content);
+  const channelId = botUtils.stringWithOnlyDigits(message.content);
   return (
     message.channel.id === botSetUp.channelFromCommandHasBeenCalled.id &&
-    getChannelByIdAndServer(channelId, botSetUp.server) &&
+    botUtils.getChannelByIdAndServer(channelId, botSetUp.server) &&
     botSetUp.user.id === message.author.id
   );
-}
-
-function stringWithOnlyDigits(string) {
-  return string.replace(/\D/g, "");
-}
-
-function initializeBotSetUp() {
-  return {
-    server: null,
-    isWaitingForChannel: false,
-    channelFromCommandHasBeenCalled: null,
-    pronosChannel: null,
-    pronosRole: null,
-    user: null,
-    isWaitingForRole: false,
-    isWaitingForChannelValidation: false,
-    isWaitingForRoleValidation: false,
-  };
 }
 
 function hasUserTypedPronosRole(message) {
-  const roleId = stringWithOnlyDigits(message.content);
+  const roleId = botUtils.stringWithOnlyDigits(message.content);
   return (
     message.channel.id === botSetUp.channelFromCommandHasBeenCalled.id &&
-    getRoleByIdAndServer(roleId, botSetUp.server) &&
+    botUtils.getRoleByIdAndServer(roleId, botSetUp.server) &&
     botSetUp.user.id === message.author.id
   );
 }
 
-function getRoleByIdAndServer(roleId, server) {
-  return server.roles.cache.get(roleId);
+function printBO1(matches, message) {
+  matches.forEach((match) => {
+    message.channel
+      .send("** :one: " + match[0] + " vs :two: " + match[1] + " **")
+      .then((prono) => {
+        prono.react("1️⃣");
+        prono.react("2️⃣");
+      });
+  });
 }
 
-function setupChannelAndRolePermissions(botSetUp) {
-  botSetUp.pronosChannel.overwritePermissions([
-    {
-      id: botSetUp.server.id,
-      deny: ["VIEW_CHANNEL"],
-    },
-    {
-      id: botSetUp.pronosRole.id,
-      allow: ["VIEW_CHANNEL"],
-      deny: ["SEND_MESSAGES", "ADD_REACTIONS"],
-    },
-  ]);
-}
-
-function getMemberByIdAndServer(memberId, server) {
-  return server.members.cache.get(memberId);
+function printBO5(BO5matches, message) {
+  BO5matches.forEach((match) => {
+    message.channel.send(
+      "**" + match[0] + " vs " + match[1] + "**, Un seul choix possible :"
+    );
+    message.channel
+      .send(
+        "**" +
+          match[0] +
+          "**" +
+          messages.BEATS +
+          "**" +
+          match[1] +
+          "** " +
+          " \n3-0 : 0️⃣\n3-1  : 1️⃣\n3-2 : 2️⃣\n"
+      )
+      .then((prono) => {
+        prono.react("0️⃣");
+        prono.react("1️⃣");
+        prono.react("2️⃣");
+      });
+    message.channel
+      .send(
+        "\n**" +
+          match[1] +
+          "**" +
+          messages.BEATS +
+          "**" +
+          match[0] +
+          "** " +
+          " \n3-0 : 0️⃣\n3-1  : 1️⃣\n3-2 : 2️⃣"
+      )
+      .then((prono) => {
+        prono.react("0️⃣");
+        prono.react("1️⃣");
+        prono.react("2️⃣");
+      });
+  });
 }
