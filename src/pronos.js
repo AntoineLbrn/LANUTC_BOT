@@ -255,16 +255,14 @@ function getDayColumn(values, currentDate) {
   return null;
 }
 
-function getNextDayColumn(values, currentDate) {
-  let hasDayBeenFound = false;
-  for (let i = 0; i < values.length; i++) {
-    if (values[i].formattedValue === currentDate) {
-      hasDayBeenFound = true;
-    } else if (hasDayBeenFound && values[i].formattedValue) {
-      return i;
+function getNextDayColumn(values, currentDate, currentDateIndex) {
+  let nextDayColumn = currentDateIndex + 2;
+  for (nextDayColumn; nextDayColumn < values.length; nextDayColumn++) {
+    if (values[nextDayColumn].formattedValue !== currentDate) {
+      return nextDayColumn;
     }
   }
-  return null;
+  return nextDayColumn;
 }
 
 function getMatchColumn(sheet, date, match) {
@@ -273,7 +271,8 @@ function getMatchColumn(sheet, date, match) {
   let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
   const nextDayColumnIndex = getNextDayColumn(
     matches[MATCH_DAY_LINE_INDEX].values,
-    date
+    date,
+    dayColumnIndex
   );
   while (dayColumnIndex < nextDayColumnIndex) {
     if (
@@ -379,7 +378,8 @@ async function getMatchesByDate(date) {
   let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
   const nextDayColumnIndex = getNextDayColumn(
     matches[MATCH_DAY_LINE_INDEX].values,
-    date
+    date,
+    dayColumnIndex
   );
   while (dayColumnIndex < nextDayColumnIndex) {
     matchesAsArrayString.push([
@@ -522,7 +522,8 @@ async function getMatchesStatisticsByDate(date) {
   let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
   const nextDayColumnIndex = getNextDayColumn(
     matches[MATCH_DAY_LINE_INDEX].values,
-    date
+    date,
+    dayColumnIndex
   );
   while (dayColumnIndex < nextDayColumnIndex) {
     matchesStatisticsAsString +=
@@ -540,7 +541,8 @@ async function getMatchesStatisticsByDateBO5(date) {
   let dayColumnIndex = getDayColumn(matches[MATCH_DAY_LINE_INDEX].values, date);
   const nextDayColumnIndex = getNextDayColumn(
     matches[MATCH_DAY_LINE_INDEX].values,
-    date
+    date,
+    dayColumnIndex
   );
   while (dayColumnIndex < nextDayColumnIndex) {
     matchesStatisticsAsString +=

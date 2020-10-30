@@ -225,6 +225,6 @@ function isBotMessageAuthor(message) {
 }
 
 function isEmptyMessage(message) {
-  const messageSplit = message.split(" ");
+  const messageSplit = message.content.split(" ");
   return !(messageSplit && messageSplit[1]);
 }

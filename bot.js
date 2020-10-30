@@ -146,7 +146,7 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
     reaction.users.remove(user.id);
     const vote = message.content.split(" ");
     const score = botUtils.getEmojiAsNumber(emoji.name);
-    if (botUtils.isEmptyMessage(vote)) {
+    if (botUtils.isEmptyMessage(message)) {
       return;
     } else if (botUtils.isBO5Vote(vote)) {
       handleBO5Reaction(score, user, vote);
