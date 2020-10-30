@@ -51,7 +51,12 @@ module.exports = {
   setupBotStep4: setupBotStep4,
   isBotMessageAuthor: isBotMessageAuthor,
   isEmptyMessage: isEmptyMessage,
+  getServerById: getServerById,
 };
+
+function getServerById(serverId, guilds) {
+  return guilds.cache.get(serverId);
+}
 
 function isBO5Vote(vote) {
   return vote[1] === "bat";

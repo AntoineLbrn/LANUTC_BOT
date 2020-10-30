@@ -79,16 +79,17 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
       //!unsubscribe
       case botUtils.COMMANDS.UNSUBSCRIBE:
         await pronos.unsubscribeUser(message.author).then((response) => {
-          if (response === 0) {
-            pronos.getPronoRoleId(message.guild).then((pronosRoleId) => {
+          if (response > 0) {
+            const server = botUtils.getServerById(response, bot.guilds);
+            pronos.getPronoRoleId(server).then((pronosRoleId) => {
               if (pronosRoleId > 0) {
                 const pronosRole = botUtils.getRoleByIdAndServer(
                   pronosRoleId,
-                  message.guild
+                  server
                 );
                 const member = botUtils.getMemberByIdAndServer(
                   message.author.id,
-                  message.guild
+                  server
                 );
                 member.roles.remove(pronosRole);
                 message.author.send(messages.UNSUBSCRIBED);

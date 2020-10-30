@@ -46,7 +46,12 @@ async function unsubscribeUser(user) {
   if (row < 0) {
     return row;
   }
-  return await apiGoogle.unsubscribeUser(row);
+  const unsubscription = await apiGoogle.unsubscribeUser(row);
+  return unsubscription === 0
+    ? sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[row].values[
+        apiGoogleUtils.USER_SHEET.SERVER_ID_INDEX
+      ].formattedValue
+    : unsubscription;
 }
 async function getUsersWhoDidNotVote() {
   const matches = await getMatchesOfTheDay();
