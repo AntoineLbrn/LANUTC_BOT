@@ -225,9 +225,9 @@ async function getBestPronostiqueurs(leaderboard, params) {
         "**" +
         i +
         " :** " +
-        leaderboard[i - 1][0] +
-        " " +
         leaderboard[i - 1][1] +
+        " " +
+        leaderboard[i - 1][2] +
         " points\n";
     }
     return leaderboardAsString;
