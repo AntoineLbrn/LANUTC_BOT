@@ -16,6 +16,7 @@ module.exports = {
     RANK: "rank",
     UNSUBSCRIBE: "unsubscribe",
     HELP: "help",
+    ELO: "elo",
   },
   PERMISSIONS: {
     ADMINISTRATOR: "ADMINISTRATOR",
@@ -52,6 +53,7 @@ module.exports = {
   isBotMessageAuthor: isBotMessageAuthor,
   isEmptyMessage: isEmptyMessage,
   getServerById: getServerById,
+  joinFirstParameterWithNextOnes: joinFirstParameterWithNextOnes,
 };
 
 function getServerById(serverId, guilds) {
@@ -64,6 +66,10 @@ function isBO5Vote(vote) {
 
 function isBO1Vote(vote) {
   return vote[3] === "vs";
+}
+
+function joinFirstParameterWithNextOnes(params, joinPattern) {
+  return params.slice(1).join(joinPattern);
 }
 
 function isValidatePronosRoleReaction(

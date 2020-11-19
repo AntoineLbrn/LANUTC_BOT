@@ -7,4 +7,5 @@ module.exports = {
     CLIENT_ID: process.env.GOOGLE_API_CLIENT_ID,
     CLIENT_SECRET: process.env.GOOGLE_API_CLIENT_SECRET,
   },
+  API_RIOT_KEY: process.env.API_RIOT_KEY,
 };

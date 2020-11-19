@@ -66,7 +66,7 @@ async function getUsersWhoDidNotVote() {
         sheet.sheets[apiGoogleUtils.PRONO_SHEET.INDEX].data[0].rowData[i]
       ) {
         if (
-          isUserRow(sheet, i) &&
+          apiGoogleUtils.isUserRow(sheet, i) &&
           !hasVoted(sheet, i, matchColumn) &&
           isActiveUser(sheet, i)
         ) {
@@ -573,16 +573,6 @@ function getToday() {
 
 function isThereAMatch(matches) {
   return matches[0][0];
-}
-
-function isUserRow(sheet, userRow) {
-  return (
-    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[userRow] &&
-    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[userRow]
-      .values[apiGoogleUtils.USER_SHEET.TAG_INDEX] &&
-    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[userRow]
-      .values[apiGoogleUtils.USER_SHEET.TAG_INDEX].formattedValue
-  );
 }
 
 function hasVoted(sheet, userRow, matchColumn) {

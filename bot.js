@@ -1,6 +1,7 @@
 const imageBuilder = require("./src/imageBuilder");
 const botUtils = require("./utils/botUtils");
 const pronos = require("./src/pronos");
+const leagueStats = require("./src/leagueStats");
 const Discord = require("discord.js");
 const config = require("./config/configuration");
 const messages = require("./static/messages");
@@ -68,6 +69,43 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
       }
     }
     switch (params[0]) {
+      //!elo [name]
+      case botUtils.COMMANDS.ELO: {
+        let summonerName = botUtils.joinFirstParameterWithNextOnes(params, " ");
+        let smurfs = "";
+        if (!summonerName) {
+          const summonerNames = await leagueStats.getSummonerNamesByUserId(
+            message.author.id
+          );
+          if (summonerNames) {
+            summonerName = summonerNames[0];
+            smurfs =
+              " " +
+              messages.SMURFS +
+              botUtils.joinFirstParameterWithNextOnes(summonerNames, ", ");
+          }
+        }
+        if (summonerName) {
+          leagueStats
+            .getSoloLeagueBySummonerName(summonerName)
+            .then((soloLeague) => {
+              leagueStats
+                .getBestChampionImageURLBySummonerName(summonerName)
+                .then((bestChampionImageURL) => {
+                  imageBuilder
+                    .getElo(summonerName, soloLeague, bestChampionImageURL)
+                    .then((attachment) => {
+                      message.channel.send(
+                        message.author.toString() + smurfs,
+                        attachment
+                      );
+                    });
+                });
+            });
+        }
+        break;
+      }
+      //leagueStats.getElo(message.author)
       //!leaderboard [N]
       case botUtils.COMMANDS.LEADERBOARD:
         message.channel.send(await pronos.getLeaderboard(params));

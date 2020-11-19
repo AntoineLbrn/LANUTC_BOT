@@ -26,4 +26,32 @@ module.exports = {
     PRONOS_ROLE_NAME_INDEX: 4,
     PRONOS_ROLE_ID_INDEX: 5,
   },
+  SUMMONER_SHEET: {
+    ID: 1892731136,
+    INDEX: 3,
+    SUMMONER_NAME_COLUMN_INDEX: 2,
+  },
+
+  isUserRow: isUserRow,
+  isSpecificUserRow: isSpecificUserRow,
 };
+
+function isUserRow(sheet, userRow) {
+  return (
+    sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[userRow] &&
+    sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[userRow].values[
+      this.USER_SHEET.TAG_INDEX
+    ] &&
+    sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[userRow].values[
+      this.USER_SHEET.TAG_INDEX
+    ].formattedValue
+  );
+}
+
+function isSpecificUserRow(sheet, userRow, userId) {
+  return (
+    sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[userRow].values[
+      this.USER_SHEET.IDS_INDEX
+    ].formattedValue === userId
+  );
+}

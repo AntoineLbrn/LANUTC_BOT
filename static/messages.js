@@ -39,4 +39,5 @@ module.exports = {
     "[4/4] : Confirmez-vous que vous souhaitez utiliser le rôle suivant, sinon relancez !setupBot : ",
   SETUP_BOT_5:
     "**Configuration terminée**, vous pouvez à présent utiliser la commande !setupSubscription",
+  SMURFS: "smurfs : ",
 };
