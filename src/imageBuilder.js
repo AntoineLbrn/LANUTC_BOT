@@ -51,12 +51,13 @@ async function getElo(summonerName, league, championURL) {
 
   //print LP winrate
 
-  const LPAndWinrate = league.leaguePoints
-    ? league.leaguePoints +
-      " LP | " +
-      ((league.wins / (league.wins + league.losses)) * 100).toFixed(2) +
-      "%"
-    : "Unranked";
+  const LPAndWinrate =
+    league.leaguePoints !== undefined
+      ? league.leaguePoints +
+        " LP | " +
+        ((league.wins / (league.wins + league.losses)) * 100).toFixed(2) +
+        "%"
+      : "Unranked";
 
   ctx.font = utils.applyText(canvas, LPAndWinrate, utils.ELO.LP.WIDTH, 32);
   ctx.fillText(
@@ -68,7 +69,6 @@ async function getElo(summonerName, league, championURL) {
     ),
     utils.ELO.LP.Y
   );
-
   return new Discord.MessageAttachment(canvas.toBuffer(), utils.RANK.FILENAME);
 }
 
