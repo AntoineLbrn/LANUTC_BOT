@@ -30,6 +30,7 @@ module.exports = {
     ID: 1892731136,
     INDEX: 3,
     SUMMONER_NAME_COLUMN_INDEX: 2,
+    USER_ID_INDEX: 1,
   },
 
   isUserRow: isUserRow,

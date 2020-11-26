@@ -18,6 +18,7 @@ module.exports = {
     HELP: "help",
     ELO: "elo",
     ADD_SUMMONER: "addSummoner",
+    ELO_LEADERBOARD: "eloLeaderboard",
   },
   PERMISSIONS: {
     ADMINISTRATOR: "ADMINISTRATOR",

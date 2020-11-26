@@ -69,6 +69,11 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
       }
     }
     switch (params[0]) {
+      //!eloLeaderboard [N]
+      case botUtils.COMMANDS.ELO_LEADERBOARD: {
+        handleLeaderboardCommand(params[1], message);
+        break;
+      }
       //!subscribeSummoner [name]
       case botUtils.COMMANDS.ADD_SUMMONER: {
         handleAddSummonerCommand(params, message);
@@ -444,4 +449,12 @@ async function handleAddSummonerCommand(params, message) {
   ) {
     await leagueStats.addSummonerName(message.author, summonerName);
   }
+}
+
+async function handleLeaderboardCommand(number, message) {
+  message.channel.send(
+    message.author.toString() +
+      "\n" +
+      (await leagueStats.getEloLeaderboard(number))
+  );
 }

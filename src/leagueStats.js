@@ -15,7 +15,124 @@ module.exports = {
   getSummonerNamesByUserId: getSummonerNamesByUserId,
   doesThisSummonerExistByName: doesThisSummonerExistByName,
   addSummonerName: addSummonerName,
+  getEloLeaderboard: getEloLeaderboard,
 };
+
+async function getAllSummonerMains(number) {
+  const sheet = await apiGoogle.getSheet();
+  let summoners = [];
+  let i = 3;
+  number = number ? number : 10;
+  while (
+    sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i] &&
+    sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i].values[
+      apiGoogleUtils.SUMMONER_SHEET.USER_ID_INDEX
+    ] &&
+    summoners.length < number
+  ) {
+    if (
+      sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i]
+        .values[apiGoogleUtils.SUMMONER_SHEET.SUMMONER_NAME_COLUMN_INDEX]
+    ) {
+      summoners.push(
+        sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i]
+          .values[apiGoogleUtils.SUMMONER_SHEET.SUMMONER_NAME_COLUMN_INDEX]
+          .formattedValue
+      );
+    }
+    i++;
+  }
+  return summoners;
+}
+
+async function getAllSummonersElo(summoners) {
+  let summonersElo = [];
+  for (const summoner of summoners) {
+    summonersElo.push(await getSoloLeagueBySummonerName(summoner));
+  }
+  return summonersElo;
+}
+
+function eloAsInt(a) {
+  return tierAsInt(a.tier) + rankAsInt(a.rank) + a.leaguePoints;
+}
+
+function rankAsInt(rank) {
+  switch (rank) {
+    case "IV": {
+      return 0;
+    }
+    case "III": {
+      return 100;
+    }
+    case "II": {
+      return 200;
+    }
+    case "I": {
+      return 300;
+    }
+  }
+}
+
+function tierAsInt(tier) {
+  switch (tier) {
+    case "IRON": {
+      return 0;
+    }
+    case "BRONZE": {
+      return 1000;
+    }
+    case "SILVER": {
+      return 2000;
+    }
+    case "GOLD": {
+      return 3000;
+    }
+    case "PLATINUM": {
+      return 4000;
+    }
+    case "DIAMOND": {
+      return 5000;
+    }
+    case "MASTER": {
+      return 6000;
+    }
+    case "GRANDMASTER": {
+      return 6000;
+    }
+    case "CHALLENGER": {
+      return 6000;
+    }
+    default: {
+      return -1000;
+    }
+  }
+}
+
+function formatSummonersElo(summonersElo) {
+  let formattedSummonersElo = "";
+  for (const summoner of summonersElo) {
+    formattedSummonersElo +=
+      summoner.summonerName +
+      " : " +
+      summoner.tier +
+      " " +
+      summoner.rank +
+      " " +
+      summoner.leaguePoints +
+      "LP\n";
+  }
+  return formattedSummonersElo;
+}
+
+async function getEloLeaderboard(number) {
+  const summoners = await getAllSummonerMains(number);
+  const summonersElo = await getAllSummonersElo(summoners);
+  summonersElo.sort(function (a, b) {
+    return eloAsInt(b) - eloAsInt(a);
+  });
+  return formatSummonersElo(summonersElo);
+}
 
 function getFillableColumnForRow(sheet, row, summonerName) {
   let i = apiGoogleUtils.SUMMONER_SHEET.SUMMONER_NAME_COLUMN_INDEX;
