@@ -54,7 +54,12 @@ module.exports = {
   isEmptyMessage: isEmptyMessage,
   getServerById: getServerById,
   joinFirstParameterWithNextOnes: joinFirstParameterWithNextOnes,
+  isSummonerNameUserId: isSummonerNameUserId,
 };
+
+function isSummonerNameUserId(summonerName) {
+  return summonerName.includes("@");
+}
 
 function getServerById(serverId, guilds) {
   return guilds.cache.get(serverId);

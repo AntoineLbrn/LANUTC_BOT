@@ -36,6 +36,7 @@ async function getSummonerNamesByUserId(userId) {
         return summonerNames;
       }
     }
+    i++;
   }
 }
 

@@ -40,4 +40,9 @@ module.exports = {
   SETUP_BOT_5:
     "**Configuration terminée**, vous pouvez à présent utiliser la commande !setupSubscription",
   SMURFS: "smurfs : ",
+  SELF_SUMMONER_NOT_SUBSCRIBED:
+    "Vous n'avez pas inscrit de nom d'invocateur. Veuillez d'abord utiliser !addSummoner [nom de compte] :D ",
+  SUMMONER_NOT_SUBSCRIBED:
+    " cet utilisateur n'a pas renseigné son nom d'invocateur",
+  SUMMONER_DOES_NOT_EXIST: " ce joueur n'existe pas.",
 };

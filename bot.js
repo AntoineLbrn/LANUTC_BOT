@@ -73,35 +73,56 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
       case botUtils.COMMANDS.ELO: {
         let summonerName = botUtils.joinFirstParameterWithNextOnes(params, " ");
         let smurfs = "";
+        let summonerNames;
         if (!summonerName) {
-          const summonerNames = await leagueStats.getSummonerNamesByUserId(
+          summonerNames = await leagueStats.getSummonerNamesByUserId(
             message.author.id
           );
-          if (summonerNames) {
-            summonerName = summonerNames[0];
-            smurfs =
-              " " +
-              messages.SMURFS +
-              botUtils.joinFirstParameterWithNextOnes(summonerNames, ", ");
+        }
+        if (botUtils.isSummonerNameUserId(summonerName)) {
+          summonerNames = await leagueStats.getSummonerNamesByUserId(
+            botUtils.stringWithOnlyDigits(summonerName)
+          );
+          if (!summonerNames) {
+            message.channel.send(
+              message.author.toString() + messages.SUMMONER_NOT_SUBSCRIBED
+            );
+            break;
           }
         }
+        if (summonerNames) {
+          summonerName = summonerNames[0];
+          smurfs =
+            " " +
+            messages.SMURFS +
+            botUtils.joinFirstParameterWithNextOnes(summonerNames, ", ");
+        }
+
         if (summonerName) {
           leagueStats
             .getSoloLeagueBySummonerName(summonerName)
             .then((soloLeague) => {
-              leagueStats
-                .getBestChampionImageURLBySummonerName(summonerName)
-                .then((bestChampionImageURL) => {
-                  imageBuilder
-                    .getElo(summonerName, soloLeague, bestChampionImageURL)
-                    .then((attachment) => {
-                      message.channel.send(
-                        message.author.toString() + smurfs,
-                        attachment
-                      );
-                    });
-                });
+              if (soloLeague === leagueStats.ERROR_CODE.NO_SUMMONER) {
+                message.channel.send(
+                  message.author.toString() + messages.SUMMONER_DOES_NOT_EXIST
+                );
+              } else {
+                leagueStats
+                  .getBestChampionImageURLBySummonerName(summonerName)
+                  .then((bestChampionImageURL) => {
+                    imageBuilder
+                      .getElo(summonerName, soloLeague, bestChampionImageURL)
+                      .then((attachment) => {
+                        message.channel.send(
+                          message.author.toString() + smurfs,
+                          attachment
+                        );
+                      });
+                  });
+              }
             });
+        } else {
+          message.author.send(messages.SELF_SUMMONER_NOT_SUBSCRIBED);
         }
         break;
       }
