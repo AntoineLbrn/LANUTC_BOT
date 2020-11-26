@@ -45,4 +45,5 @@ module.exports = {
   SUMMONER_NOT_SUBSCRIBED:
     " cet utilisateur n'a pas renseigné son nom d'invocateur",
   SUMMONER_DOES_NOT_EXIST: " ce joueur n'existe pas.",
+  REPOST: " repost gros bouff",
 };

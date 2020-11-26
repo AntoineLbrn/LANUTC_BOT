@@ -57,8 +57,16 @@ module.exports = {
   getServerById: getServerById,
   joinFirstParameterWithNextOnes: joinFirstParameterWithNextOnes,
   isSummonerNameUserId: isSummonerNameUserId,
+  parseMessageToGetLink: parseMessageToGetLink,
 };
 
+function parseMessageToGetLink(message) {
+  for (const word of message.split(" ")) {
+    if (word.includes("https://twitter.com")) {
+      return word;
+    }
+  }
+}
 function isSummonerNameUserId(summonerName) {
   return summonerName.includes("@");
 }
