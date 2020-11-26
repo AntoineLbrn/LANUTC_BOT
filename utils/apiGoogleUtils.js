@@ -34,6 +34,7 @@ module.exports = {
 
   isUserRow: isUserRow,
   isSpecificUserRow: isSpecificUserRow,
+  getUserRow: getUserRow,
 };
 
 function isUserRow(sheet, userRow) {
@@ -54,4 +55,22 @@ function isSpecificUserRow(sheet, userRow, userId) {
       this.USER_SHEET.IDS_INDEX
     ].formattedValue === userId
   );
+}
+
+function getUserRow(sheet, user) {
+  let i = 3;
+  while (
+    sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[i] &&
+    sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[i].values
+  ) {
+    if (
+      sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[i].values[
+        this.USER_SHEET.IDS_INDEX
+      ].formattedValue === user.id
+    ) {
+      return i;
+    }
+    i++;
+  }
+  return -3;
 }

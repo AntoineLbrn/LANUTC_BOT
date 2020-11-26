@@ -42,7 +42,7 @@ async function sendSettings(botSetUp) {
 
 async function unsubscribeUser(user) {
   const sheet = await apiGoogle.getSheet();
-  const row = getUserRow(sheet, user);
+  const row = apiGoogleUtils.getUserRow(sheet, user);
   if (row < 0) {
     return row;
   }
@@ -292,24 +292,6 @@ function getMatchColumn(sheet, date, match) {
   }
 }
 
-function getUserRow(sheet, user) {
-  let i = 3;
-  while (
-    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i] &&
-    sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i].values
-  ) {
-    if (
-      sheet.sheets[apiGoogleUtils.USER_SHEET.INDEX].data[0].rowData[i].values[
-        apiGoogleUtils.USER_SHEET.IDS_INDEX
-      ].formattedValue === user.id
-    ) {
-      return i;
-    }
-    i++;
-  }
-  return -3;
-}
-
 function getAvailableServerRowIfServerDoesNotExist(sheet, server) {
   let i = 1;
   while (
@@ -349,7 +331,7 @@ function getServerRow(sheet, server) {
 async function addBO5Prono(tomorrow, match, user, score, winnerIsFirstTeam) {
   const sheet = await apiGoogle.getSheet();
   const matchColumn = getMatchColumn(sheet, tomorrow, match);
-  const playerRow = await getUserRow(sheet, user);
+  const playerRow = await apiGoogleUtils.getUserRow(sheet, user);
 
   const requestOnFirstColumn = await apiGoogle.sendProno(
     matchColumn,
@@ -371,7 +353,7 @@ async function addBO5Prono(tomorrow, match, user, score, winnerIsFirstTeam) {
 async function addBO1Prono(tomorrow, match, winner, user) {
   const sheet = await apiGoogle.getSheet();
   const matchColumn = getMatchColumn(sheet, tomorrow, match);
-  const playerRow = await getUserRow(sheet, user);
+  const playerRow = await apiGoogleUtils.getUserRow(sheet, user);
 
   return apiGoogle.sendProno(matchColumn + winner - 1, playerRow, 1, sheet);
 }

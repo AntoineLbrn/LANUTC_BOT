@@ -13,7 +13,38 @@ module.exports = {
   getBestChampionImageURLBySummonerName: getBestChampionImageURLBySummonerName,
   ERROR_CODE: ERROR_CODE,
   getSummonerNamesByUserId: getSummonerNamesByUserId,
+  doesThisSummonerExistByName: doesThisSummonerExistByName,
+  addSummonerName: addSummonerName,
 };
+
+function getFillableColumnForRow(sheet, row, summonerName) {
+  let i = apiGoogleUtils.SUMMONER_SHEET.SUMMONER_NAME_COLUMN_INDEX;
+  while (
+    sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[row]
+      .values[i] &&
+    sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[row]
+      .values[i].formattedValue !== summonerName
+  ) {
+    i++;
+  }
+  return i;
+}
+
+async function addSummonerName(user, summonerName) {
+  const sheet = await apiGoogle.getSheet();
+  const row = apiGoogleUtils.getUserRow(sheet, user);
+  const column = getFillableColumnForRow(sheet, row, summonerName);
+  return addSummonerNameOnRowAndColumn(summonerName, row, column);
+}
+
+function addSummonerNameOnRowAndColumn(summonerName, row, column) {
+  return apiGoogle.sendSummonerName(summonerName, row, column);
+}
+
+async function doesThisSummonerExistByName(summonerName) {
+  const summoner = await riotApi.getSummonerBySummonerName(summonerName);
+  return !!summoner;
+}
 
 async function getSummonerNamesByUserId(userId) {
   let summonerNames = [];
@@ -36,6 +67,7 @@ async function getSummonerNamesByUserId(userId) {
         return summonerNames;
       }
     }
+    i++;
   }
 }
 

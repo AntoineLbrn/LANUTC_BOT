@@ -9,7 +9,21 @@ module.exports = {
   getSheet: getSheet,
   unsubscribeUser: unsubscribeUser,
   sendSettings: sendSettings,
+  sendSummonerName: sendSummonerName,
 };
+
+async function sendSummonerName(summonerName, row, column) {
+  await getToken();
+
+  return (await updateCell(
+    apiGoogleUtils.SUMMONER_SHEET.ID,
+    column,
+    row,
+    summonerName
+  )) === 0
+    ? 0
+    : -2;
+}
 
 async function sendSettings(botSetUp, row) {
   await getToken();

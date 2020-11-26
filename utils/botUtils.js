@@ -17,6 +17,7 @@ module.exports = {
     UNSUBSCRIBE: "unsubscribe",
     HELP: "help",
     ELO: "elo",
+    ADD_SUMMONER: "addSummoner",
   },
   PERMISSIONS: {
     ADMINISTRATOR: "ADMINISTRATOR",

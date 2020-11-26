@@ -69,6 +69,20 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
       }
     }
     switch (params[0]) {
+      //!subscribeSummoner [name]
+      case botUtils.COMMANDS.ADD_SUMMONER: {
+        const summonerName = botUtils.joinFirstParameterWithNextOnes(
+          params,
+          " "
+        );
+        if (
+          params[1] &&
+          (await leagueStats.doesThisSummonerExistByName(summonerName))
+        ) {
+          await leagueStats.addSummonerName(message.author, summonerName);
+        }
+        break;
+      }
       //!elo [name]
       case botUtils.COMMANDS.ELO: {
         let summonerName = botUtils.joinFirstParameterWithNextOnes(params, " ");
