@@ -452,11 +452,15 @@ async function handleAddSummonerCommand(params, message) {
             .addSummonerName(message.author, summonerName, message.guild)
             .then((response) => {
               if (response === 0) {
-                message.channel.send(messages.SUMMONER_NAME_ADDED);
+                message.channel.send(
+                  message.author.toString() + " " + messages.SUMMONER_NAME_ADDED
+                );
               }
             });
         } else {
-          message.channel.send(messages.SUMMONER_DOES_NOT_EXIST);
+          message.channel.send(
+            message.author.toString() + " " + messages.SUMMONER_DOES_NOT_EXIST
+          );
         }
       });
   }
