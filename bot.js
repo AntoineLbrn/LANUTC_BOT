@@ -1,4 +1,3 @@
-const other = require("./src/other");
 const imageBuilder = require("./src/imageBuilder");
 const botUtils = require("./utils/botUtils");
 const pronos = require("./src/pronos");
@@ -17,19 +16,7 @@ bot.on(botUtils.READY_CODE, () => {
   startCronReminder();
 });
 
-function handleRepost(message) {
-  if (message.content.includes("https://twitter.com")) {
-    const link = botUtils.parseMessageToGetLink(message.content);
-    other.addTwitterLinkIfNotExist(message.author, link).then((response) => {
-      if (response === -1) {
-        message.channel.send(message.author.toString() + messages.REPOST);
-      }
-    });
-  }
-}
-
 bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
-  handleRepost(message);
   if (botUtils.isMessageContentACommand(message.content)) {
     const cmd = message.content.substring(1);
     const params = cmd.split(" ");
