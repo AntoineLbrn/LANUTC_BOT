@@ -400,7 +400,7 @@ async function handleEloCommand(params, message) {
     summonerNames = await leagueStats.getSummonerNamesByUserId(
       botUtils.stringWithOnlyDigits(summonerName)
     );
-    if (!summonerNames) {
+    if (!summonerNames || !summonerNames.length) {
       message.channel.send(
         message.author.toString() + messages.SUMMONER_NOT_SUBSCRIBED
       );
