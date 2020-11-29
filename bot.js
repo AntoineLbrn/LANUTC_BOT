@@ -443,11 +443,22 @@ async function handleEloCommand(params, message) {
 
 async function handleAddSummonerCommand(params, message) {
   const summonerName = botUtils.joinFirstParameterWithNextOnes(params, " ");
-  if (
-    params[1] &&
-    (await leagueStats.doesThisSummonerExistByName(summonerName))
-  ) {
-    await leagueStats.addSummonerName(message.author, summonerName);
+  if (params[1]) {
+    leagueStats
+      .doesThisSummonerExistByName(summonerName)
+      .then((summonerExist) => {
+        if (summonerExist) {
+          leagueStats
+            .addSummonerName(message.author, summonerName, message.guild)
+            .then((response) => {
+              if (response === 0) {
+                message.channel.send(messages.SUMMONER_NAME_ADDED);
+              }
+            });
+        } else {
+          message.channel.send(messages.SUMMONER_DOES_NOT_EXIST);
+        }
+      });
   }
 }
 

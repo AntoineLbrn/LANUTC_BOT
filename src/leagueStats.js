@@ -1,3 +1,4 @@
+const pronos = require("./pronos");
 const riotApi = require("./riotApi");
 const riotApiUtils = require("../utils/riotApiUtils");
 const apiGoogle = require("./apiGoogle");
@@ -147,9 +148,14 @@ function getFillableColumnForRow(sheet, row, summonerName) {
   return i;
 }
 
-async function addSummonerName(user, summonerName) {
-  const sheet = await apiGoogle.getSheet();
-  const row = apiGoogleUtils.getUserRow(sheet, user);
+async function addSummonerName(user, summonerName, server) {
+  let sheet = await apiGoogle.getSheet();
+  let row = apiGoogleUtils.getUserRow(sheet, user);
+  if (row === -3) {
+    await pronos.addPronostiqueur(user, server);
+  }
+  sheet = await apiGoogle.getSheet();
+  row = apiGoogleUtils.getUserRow(sheet, user);
   const column = getFillableColumnForRow(sheet, row, summonerName);
   return addSummonerNameOnRowAndColumn(summonerName, row, column);
 }
@@ -160,7 +166,7 @@ function addSummonerNameOnRowAndColumn(summonerName, row, column) {
 
 async function doesThisSummonerExistByName(summonerName) {
   const summoner = await riotApi.getSummonerBySummonerName(summonerName);
-  return !!summoner;
+  return !!summoner.name;
 }
 
 async function getSummonerNamesByUserId(userId) {

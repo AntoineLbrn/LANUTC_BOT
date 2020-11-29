@@ -26,7 +26,12 @@ module.exports = {
     "**leaderboard [N]** : Affiche un classement des N premiers pronostiqueurs. \n" +
     "**help** : Affiche toutes les commandes disponibles. \n" +
     "**unsubscribe** : Vous désinscrit des pronostics, pour ne plus être tag. \n" +
-    "**rank** : Affiche votre classement de pronostiqueur.",
+    "**rank** : Affiche votre classement de pronostiqueur.\n" +
+    "**elo [nom d'invocateur]** : Affiche le elo de l'invocateur.\n" +
+    "**elo [@utilisateur]** : Affiche le elo de l'utilisateur discord.\n" +
+    "**elo** : Affiche votre elo\n" +
+    "**addSummoner** : Ajoute un compte LoL à votre identité discord\n" +
+    "**eloLeaderboard [N]** : Affiche les N utilisateurs les mieux classés du serveur\n",
   SERVER_ALREADY_SET_UP: "Ce serveur est déjà configuré.",
   SETUP_BOT_1:
     "**Bienvenue dans l'interface de configuration du bot** \n\n" +
@@ -45,5 +50,5 @@ module.exports = {
   SUMMONER_NOT_SUBSCRIBED:
     " cet utilisateur n'a pas renseigné son nom d'invocateur",
   SUMMONER_DOES_NOT_EXIST: " ce joueur n'existe pas.",
-  REPOST: " repost gros bouff",
+  SUMMONER_NAME_ADDED: "Nom d'invocateur ajouté !",
 };

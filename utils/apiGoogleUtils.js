@@ -62,7 +62,9 @@ function getUserRow(sheet, user) {
   let i = 3;
   while (
     sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[i] &&
-    sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[i].values
+    sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[i].values[
+      this.USER_SHEET.IDS_INDEX
+    ]
   ) {
     if (
       sheet.sheets[this.USER_SHEET.INDEX].data[0].rowData[i].values[
