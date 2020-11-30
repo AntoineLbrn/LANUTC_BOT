@@ -45,7 +45,7 @@ async function requestRiotApiGet(url) {
       "X-Riot-Token": config.API_RIOT_KEY,
     },
   });
-  console.log(response);
+  console.log(response.status);
   return await response.json();
 }
 async function getChampionMasteryBySummonerID(summonerID) {

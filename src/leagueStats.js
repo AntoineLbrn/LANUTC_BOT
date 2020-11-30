@@ -217,8 +217,6 @@ async function getBestChampionImageURLBySummonerName(summonerName) {
 
 async function getSoloLeagueBySummonerName(summonerName) {
   const summoner = await riotApi.getSummonerBySummonerName(summonerName);
-  console.log(summonerName);
-  console.log(summoner);
   if (summoner.id) {
     const league = await riotApi.getLeagueBySummonerID(summoner.id);
     return getSoloQFromLeague(league);
