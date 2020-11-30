@@ -146,6 +146,17 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
           });
         });
         break;
+      default: {
+        const nearestCommand = botUtils.getNearestCommand(cmd);
+        message.channel.send(
+          message.author.toString() +
+            " " +
+            messages.WRONG_COMMAND +
+            " **" +
+            nearestCommand +
+            "**"
+        );
+      }
     }
   } else if (
     botSetUp.isWaitingForChannel &&

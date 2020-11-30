@@ -51,4 +51,5 @@ module.exports = {
     " cet utilisateur n'a pas renseigné son nom d'invocateur",
   SUMMONER_DOES_NOT_EXIST: " ce joueur n'existe pas.",
   SUMMONER_NAME_ADDED: "Nom d'invocateur ajouté !",
+  WRONG_COMMAND: "Commande non reconnue. Peut être vouliez-vous dire",
 };

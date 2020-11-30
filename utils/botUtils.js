@@ -1,5 +1,6 @@
 const config = require("../config/configuration");
 const messages = require("../static/messages");
+const levenshtein = require("js-levenshtein");
 
 module.exports = {
   RECEIVE_MESSAGE_CODE: "message",
@@ -57,16 +58,21 @@ module.exports = {
   getServerById: getServerById,
   joinFirstParameterWithNextOnes: joinFirstParameterWithNextOnes,
   isSummonerNameUserId: isSummonerNameUserId,
-  parseMessageToGetLink: parseMessageToGetLink,
+  getNearestCommand: getNearestCommand,
 };
 
-function parseMessageToGetLink(message) {
-  for (const word of message.split(" ")) {
-    if (word.includes("https://twitter.com")) {
-      return word;
+function getNearestCommand(cmd) {
+  let min = 20;
+  let nearestCommand = this.COMMANDS.SETUP_SUBSCRIPTION;
+  for (let i in this.COMMANDS) {
+    if (min > levenshtein(cmd, this.COMMANDS[i])) {
+      nearestCommand = this.COMMANDS[i];
+      min = levenshtein(cmd, this.COMMANDS[i]);
     }
   }
+  return nearestCommand;
 }
+
 function isSummonerNameUserId(summonerName) {
   return summonerName.includes("@");
 }
