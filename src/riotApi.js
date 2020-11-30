@@ -38,45 +38,30 @@ async function getChampionImageURLByChampionID(championID) {
   return null;
 }
 
+async function requestRiotApiGet(url) {
+  const response = await fetch(riotApiUtils.BASE_URL + url, {
+    method: "GET",
+    headers: {
+      "X-Riot-Token": config.API_RIOT_KEY,
+    },
+  });
+  console.log(response);
+  return await response.json();
+}
 async function getChampionMasteryBySummonerID(summonerID) {
-  const championMastery = await fetch(
-    riotApiUtils.BASE_URL +
-      riotApiUtils.CHAMPION_MASTERY.BY_SUMMONER_ID +
-      summonerID,
-    {
-      method: "GET",
-      headers: {
-        "X-Riot-Token": config.API_RIOT_KEY,
-      },
-    }
+  return await requestRiotApiGet(
+    riotApiUtils.CHAMPION_MASTERY.BY_SUMMONER_ID + summonerID
   );
-  return await championMastery.json();
 }
 
 async function getSummonerBySummonerName(summonerName) {
-  const summoner = await fetch(
-    riotApiUtils.BASE_URL +
-      riotApiUtils.SUMMONER.BY_NAME +
-      encodeURIComponent(summonerName),
-    {
-      method: "GET",
-      headers: {
-        "X-Riot-Token": config.API_RIOT_KEY,
-      },
-    }
+  return await requestRiotApiGet(
+    riotApiUtils.SUMMONER.BY_NAME + encodeURIComponent(summonerName)
   );
-  return await summoner.json();
 }
 
 async function getLeagueBySummonerID(summonerID) {
-  const summoner = await fetch(
-    riotApiUtils.BASE_URL + riotApiUtils.LEAGUE.BY_SUMMONER_ID + summonerID,
-    {
-      method: "GET",
-      headers: {
-        "X-Riot-Token": config.API_RIOT_KEY,
-      },
-    }
+  return await requestRiotApiGet(
+    riotApiUtils.LEAGUE.BY_SUMMONER_ID + summonerID
   );
-  return await summoner.json();
 }
