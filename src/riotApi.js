@@ -39,13 +39,16 @@ async function getChampionImageURLByChampionID(championID) {
 }
 
 async function requestRiotApiGet(url) {
-  const response = await fetch(riotApiUtils.BASE_URL + url, {
-    method: "GET",
-    headers: {
-      "X-Riot-Token": config.API_RIOT_KEY,
-    },
-  });
-  console.log(response.status);
+  let response;
+  do {
+    response = await fetch(riotApiUtils.BASE_URL + url, {
+      method: "GET",
+      headers: {
+        "X-Riot-Token": config.API_RIOT_KEY,
+      },
+    });
+  } while (response.status === 429);
+
   return await response.json();
 }
 async function getChampionMasteryBySummonerID(summonerID) {
