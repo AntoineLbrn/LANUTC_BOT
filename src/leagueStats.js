@@ -44,8 +44,6 @@ async function getAllSummonerMains() {
     }
     i++;
   }
-  console.log(i);
-  console.log(summoners);
   return summoners;
 }
 
@@ -135,11 +133,15 @@ function removeUnrankedFromLeaderboard(summonersElo) {
 
 async function getEloLeaderboard(number) {
   const summoners = await getAllSummonerMains();
+  console.log(summoners);
   const summonersElo = await getAllSummonersElo(summoners);
+  console.log(summonersElo);
   const summonersRankedElo = removeUnrankedFromLeaderboard(summonersElo);
+  console.log(summonersRankedElo);
   summonersRankedElo.sort(function (a, b) {
     return eloAsInt(b) - eloAsInt(a);
   });
+  console.log(summonersRankedElo);
   const firstNSummoners = summonersRankedElo.slice(0, number ? number : 10);
   return formatSummonersElo(firstNSummoners);
 }
