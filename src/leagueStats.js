@@ -41,6 +41,7 @@ async function getAllSummonerMains() {
     }
     i++;
   }
+  console.log(i);
   return summoners;
 }
 
