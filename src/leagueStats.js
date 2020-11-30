@@ -129,7 +129,7 @@ function removeUnrankedFromLeaderboard(summonersElo) {
 }
 
 async function getEloLeaderboard(number) {
-  const summoners = await getAllSummonerMains(number);
+  const summoners = await getAllSummonerMains();
   const summonersElo = await getAllSummonersElo(summoners);
   const summonersRankedElo = removeUnrankedFromLeaderboard(summonersElo);
   summonersRankedElo.sort(function (a, b) {
