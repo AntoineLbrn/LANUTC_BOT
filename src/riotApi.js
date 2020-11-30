@@ -55,7 +55,9 @@ async function getChampionMasteryBySummonerID(summonerID) {
 
 async function getSummonerBySummonerName(summonerName) {
   const summoner = await fetch(
-    riotApiUtils.BASE_URL + riotApiUtils.SUMMONER.BY_NAME + summonerName,
+    riotApiUtils.BASE_URL +
+      riotApiUtils.SUMMONER.BY_NAME +
+      encodeURIComponent(summonerName),
     {
       method: "GET",
       headers: {

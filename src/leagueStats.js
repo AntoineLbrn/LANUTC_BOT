@@ -19,17 +19,15 @@ module.exports = {
   getEloLeaderboard: getEloLeaderboard,
 };
 
-async function getAllSummonerMains(number) {
+async function getAllSummonerMains() {
   const sheet = await apiGoogle.getSheet();
   let summoners = [];
   let i = 3;
-  number = number ? number : 10;
   while (
     sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i] &&
     sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i].values[
       apiGoogleUtils.SUMMONER_SHEET.USER_ID_INDEX
-    ] &&
-    summoners.length < number
+    ]
   ) {
     if (
       sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i]
@@ -126,13 +124,19 @@ function formatSummonersElo(summonersElo) {
   return formattedSummonersElo;
 }
 
+function removeUnrankedFromLeaderboard(summonersElo) {
+  return summonersElo.filter((summonerElo) => summonerElo.leagueId);
+}
+
 async function getEloLeaderboard(number) {
   const summoners = await getAllSummonerMains(number);
   const summonersElo = await getAllSummonersElo(summoners);
-  summonersElo.sort(function (a, b) {
+  const summonersRankedElo = removeUnrankedFromLeaderboard(summonersElo);
+  summonersRankedElo.sort(function (a, b) {
     return eloAsInt(b) - eloAsInt(a);
   });
-  return formatSummonersElo(summonersElo);
+  const firstNSummoners = summonersRankedElo.slice(0, number ? number : 10);
+  return formatSummonersElo(firstNSummoners);
 }
 
 function getFillableColumnForRow(sheet, row, summonerName) {

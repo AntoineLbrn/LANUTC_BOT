@@ -389,7 +389,7 @@ function printBO5(BO5matches, message) {
 
 async function handleEloCommand(params, message) {
   let summonerName = botUtils.joinFirstParameterWithNextOnes(params, " ");
-  let smurfs = "";
+  let smurfs = " ";
   let summonerNames;
   if (!summonerName) {
     summonerNames = await leagueStats.getSummonerNamesByUserId(
@@ -407,12 +407,13 @@ async function handleEloCommand(params, message) {
       return;
     }
   }
-  if (summonerNames) {
+  if (summonerNames && summonerNames.length) {
     summonerName = summonerNames[0];
-    smurfs =
-      " " +
-      messages.SMURFS +
-      botUtils.joinFirstParameterWithNextOnes(summonerNames, ", ");
+    if (summonerNames[1]) {
+      smurfs =
+        messages.SMURFS +
+        botUtils.joinFirstParameterWithNextOnes(summonerNames, ", ");
+    }
   }
 
   if (summonerName) {
