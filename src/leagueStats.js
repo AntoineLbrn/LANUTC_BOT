@@ -27,7 +27,10 @@ async function getAllSummonerMains() {
     sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i] &&
     sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i].values[
       apiGoogleUtils.SUMMONER_SHEET.USER_ID_INDEX
-    ]
+    ] &&
+    sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i].values[
+      apiGoogleUtils.SUMMONER_SHEET.USER_ID_INDEX
+    ].formattedValue
   ) {
     if (
       sheet.sheets[apiGoogleUtils.SUMMONER_SHEET.INDEX].data[0].rowData[i]
@@ -41,7 +44,6 @@ async function getAllSummonerMains() {
     }
     i++;
   }
-  console.log(i);
   return summoners;
 }
 
