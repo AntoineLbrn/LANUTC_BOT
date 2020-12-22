@@ -1,6 +1,21 @@
 const config = require("../config/configuration");
 const messages = require("../static/messages");
-const levenshtein = require("js-levenshtein");
+const apiGoogle = require("../src/apiGoogle");
+const apiGoogleUtils = require("./apiGoogleUtils");
+
+const OPTIONAL_COMMANDS = {
+  SETUP_SUBSCRIPTION: "setupSubscription",
+  STATISTICS: "statistics",
+  STATISTICS_BO5: "statisticsBO5",
+  PRONOS_BO1: "pronosBO1",
+  PRONOS_BO5: "pronosBO5",
+  LEADERBOARD: "leaderboard",
+  RANK: "rank",
+  UNSUBSCRIBE: "unsubscribe",
+  ELO: "elo",
+  ADD_SUMMONER: "addSummoner",
+  ELO_LEADERBOARD: "eloLeaderboard",
+};
 
 module.exports = {
   RECEIVE_MESSAGE_CODE: "message",
@@ -9,6 +24,7 @@ module.exports = {
   COMMANDS: {
     SETUP_SUBSCRIPTION: "setupSubscription",
     SETUP_BOT: "setupBot",
+    SETUP_COMMANDS: "setupCommands",
     STATISTICS: "statistics",
     STATISTICS_BO5: "statisticsBO5",
     PRONOS_BO1: "pronosBO1",
@@ -21,6 +37,7 @@ module.exports = {
     ADD_SUMMONER: "addSummoner",
     ELO_LEADERBOARD: "eloLeaderboard",
   },
+  OPTIONAL_COMMANDS: OPTIONAL_COMMANDS,
   PERMISSIONS: {
     ADMINISTRATOR: "ADMINISTRATOR",
   },
@@ -31,6 +48,9 @@ module.exports = {
   VOTE_REMINDER: {
     HOURS: 19,
     MINUTES: 0,
+  },
+  ERROR_CODE: {
+    BOT_HAS_NO_PERMISSIONS: -5,
   },
   isBO5Vote: isBO5Vote,
   isBO1Vote: isBO1Vote,
@@ -59,7 +79,14 @@ module.exports = {
   joinFirstParameterWithNextOnes: joinFirstParameterWithNextOnes,
   isSummonerNameUserId: isSummonerNameUserId,
   getNearestCommand: getNearestCommand,
+  hasBotSetupPermissions: hasBotSetupPermissions,
+  initializeBotCommands: initializeBotCommands,
+  setupCommandsStep1: setupCommandsStep1,
+  addCommand: addCommand,
+  retrieveBotCommands: retrieveBotCommands,
 };
+
+const levenshtein = require("js-levenshtein");
 
 function getNearestCommand(cmd) {
   let min = 20;
@@ -105,6 +132,7 @@ function isValidatePronosRoleReaction(
     emoji.name === "✅"
   );
 }
+
 function isValidatePronosChannelReaction(
   userWhoReacted,
   userWhoShouldReact,
@@ -117,6 +145,7 @@ function isValidatePronosChannelReaction(
     emoji.name === "✅"
   );
 }
+
 function isSetupMessageReaction(user, message, emoji) {
   return (
     !user.bot &&
@@ -147,6 +176,12 @@ function getMemberByIdAndServer(memberId, server) {
   return server.members.cache.get(memberId);
 }
 
+function hasBotSetupPermissions(message) {
+  return (
+    message.guild.member(config.BOT_ID).hasPermission("MANAGE_CHANNELS") &&
+    message.guild.member(config.BOT_ID).hasPermission("MANAGE_ROLES")
+  );
+}
 function setupChannelAndRolePermissions(botSetUp) {
   botSetUp.pronosChannel.overwritePermissions([
     {
@@ -163,6 +198,35 @@ function setupChannelAndRolePermissions(botSetUp) {
 
 function getRoleByIdAndServer(roleId, server) {
   return server.roles.cache.get(roleId);
+}
+
+async function retrieveBotCommands(botCommands) {
+  const sheet = await apiGoogle.getSheet();
+  let i = apiGoogleUtils.SETTINGS_SHEET.FIRST_COMMAND_INDEX;
+  while (
+    sheet.sheets[apiGoogleUtils.SETTINGS_SHEET.INDEX].data[0].rowData[i] &&
+    sheet.sheets[apiGoogleUtils.SETTINGS_SHEET.INDEX].data[0].rowData[i].values[
+      apiGoogleUtils.SETTINGS_SHEET.COMMAND_ID_INDEX
+    ].formattedValue
+  ) {
+    botCommands.commands[
+      sheet.sheets[apiGoogleUtils.SETTINGS_SHEET.INDEX].data[0].rowData[
+        i
+      ].values[apiGoogleUtils.SETTINGS_SHEET.COMMAND_ID_INDEX].formattedValue
+    ] =
+      sheet.sheets[apiGoogleUtils.SETTINGS_SHEET.INDEX].data[0].rowData[
+        i
+      ].values[
+        apiGoogleUtils.SETTINGS_SHEET.COMMAND_ALIAS_INDEX
+      ].formattedValue;
+    i++;
+  }
+}
+function initializeBotCommands() {
+  return {
+    isWaitingForCommand: false,
+    commands: {},
+  };
 }
 
 function initializeBotSetUp() {
@@ -217,6 +281,24 @@ function isMemberAdministrator(member) {
   return member.hasPermission(this.PERMISSIONS.ADMINISTRATOR);
 }
 
+function getCommandsList() {
+  return Object.keys(OPTIONAL_COMMANDS)
+    .map(function (k) {
+      return k;
+    })
+    .join(", ");
+}
+
+function addCommand(botCommands, message) {
+  botCommands.commands[message[0]] = message[1];
+}
+
+function setupCommandsStep1(message, botCommands) {
+  botCommands.isWaitingForCommand = true;
+  message.channel.send(messages.SETUP_COMMANDS_1 + getCommandsList());
+  return botCommands;
+}
+
 function setupBotStep1(message, botSetUp) {
   message.channel.send(messages.SETUP_BOT_1);
   botSetUp = initializeBotSetUp();
@@ -224,6 +306,7 @@ function setupBotStep1(message, botSetUp) {
   botSetUp.channelFromCommandHasBeenCalled = message.channel;
   botSetUp.server = message.channel.guild;
   botSetUp.user = message.author;
+  return botSetUp;
 }
 
 function setupBotStep2(message, botSetUp) {

@@ -52,4 +52,13 @@ module.exports = {
   SUMMONER_DOES_NOT_EXIST: " ce joueur n'existe pas.",
   SUMMONER_NAME_ADDED: "Nom d'invocateur ajouté !",
   WRONG_COMMAND: "Commande non reconnue. Peut être vouliez-vous dire",
+  BOT_HAS_NO_PERMISSIONS:
+    "Les permissions n'ont pas pu être éditées, êtes vous certain d'avoir donné les droits d'administration ?",
+  SETUP_COMMANDS_1:
+    "**Bienvenue dans l'interface de gestion des commandes.**\n" +
+    "Pour ajouter une commande et son alias, tapez [NOM_COMMANDE] [alias].\n" +
+    "Pour valider l'ajout de commande, tapez stop\n\n",
+  COMMAND_ADDED: "**Commande ajoutée**",
+  STOP_MESSAGE: "stop",
+  COMMAND_CONFIGURATION_END: "Configuration terminée",
 };

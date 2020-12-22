@@ -1,5 +1,6 @@
 const imageBuilder = require("./src/imageBuilder");
 const botUtils = require("./utils/botUtils");
+const apiGoogle = require("./src/apiGoogle");
 const pronos = require("./src/pronos");
 const leagueStats = require("./src/leagueStats");
 const Discord = require("discord.js");
@@ -10,6 +11,8 @@ const schedule = require("node-schedule");
 // Initialize Discord Bot
 var bot = new Discord.Client();
 let botSetUp = botUtils.initializeBotSetUp();
+let botCommands = botUtils.initializeBotCommands();
+botUtils.retrieveBotCommands(botCommands);
 
 bot.on(botUtils.READY_CODE, () => {
   setActivity();
@@ -25,10 +28,15 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
       botUtils.isNotDirectMessage(message) &&
       botUtils.isMemberAdministrator(message.member)
     ) {
+      console.log(botCommands);
       switch (cmd) {
+        // !setupCommands
+        case botCommands.commands.SETUP_COMMANDS:
+          botSetUp = botUtils.setupCommandsStep1(message, botCommands);
+          break;
         // !setupBot
         case botUtils.COMMANDS.SETUP_BOT:
-          botUtils.setupBotStep1(message, botSetUp);
+          botSetUp = botUtils.setupBotStep1(message, botSetUp);
           break;
         // !setupSubscription
         case botUtils.COMMANDS.SETUP_SUBSCRIPTION:
@@ -148,23 +156,44 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
         break;
       default: {
         const nearestCommand = botUtils.getNearestCommand(cmd);
-        message.channel.send(
-          message.author.toString() +
-            " " +
-            messages.WRONG_COMMAND +
-            " **" +
-            nearestCommand +
-            "**"
-        );
+        if (cmd !== nearestCommand) {
+          message.channel.send(
+            message.author.toString() +
+              " " +
+              messages.WRONG_COMMAND +
+              " **" +
+              nearestCommand +
+              "**"
+          );
+        }
       }
     }
-  } else if (
-    botSetUp.isWaitingForChannel &&
-    hasUserTypedPronosChannel(message)
-  ) {
-    botUtils.setupBotStep2(message, botSetUp);
-  } else if (botSetUp.isWaitingForRole && hasUserTypedPronosRole(message)) {
-    botUtils.setupBotStep4(message, botSetUp);
+  } else {
+    if (botSetUp.isWaitingForChannel && hasUserTypedPronosChannel(message)) {
+      botUtils.setupBotStep2(message, botSetUp);
+    } else if (botSetUp.isWaitingForRole && hasUserTypedPronosRole(message)) {
+      botUtils.setupBotStep4(message, botSetUp);
+    } else if (
+      botCommands.isWaitingForCommand &&
+      hasUserTypedCommand(message)
+    ) {
+      botUtils.addCommand(botCommands, message.content.split(" "));
+      message.channel.send(
+        messages.COMMAND_ADDED + " " + message.content.split(" ")[1]
+      );
+    } else if (
+      botCommands.isWaitingForCommand &&
+      hasUserTypedStopMessage(message)
+    ) {
+      botCommands.isWaitingForCommand = false;
+      apiGoogle.sendCommandList(botCommands.commands).then((response) => {
+        if (response === 0) {
+          message.channel.send(messages.COMMAND_CONFIGURATION_END);
+        } else {
+          message.channel.send(messages.GENERIC_ERROR);
+        }
+      });
+    }
   }
 });
 
@@ -221,17 +250,21 @@ bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
       botSetUp.isWaitingForRoleValidation &&
       botUtils.isValidatePronosRoleReaction(user, botSetUp.user, message, emoji)
     ) {
-      botUtils.setupChannelAndRolePermissions(botSetUp);
-      pronos.sendSettings(botSetUp).then((statusCode) => {
-        if (statusCode === 0) {
-          message.channel.send(messages.SETUP_BOT_5);
-        } else if (statusCode === -3) {
-          message.channel.send(messages.SERVER_ALREADY_SET_UP);
-        } else {
-          message.channel.send(messages.GENERIC_ERROR);
-        }
-        botUtils.initializeBotSetUp();
-      });
+      if (!botUtils.hasBotSetupPermissions(message)) {
+        message.channel.send(messages.BOT_HAS_NO_PERMISSIONS);
+      } else {
+        botUtils.setupChannelAndRolePermissions(botSetUp);
+        pronos.sendSettings(botSetUp).then((statusCode) => {
+          if (statusCode === 0) {
+            message.channel.send(messages.SETUP_BOT_5);
+          } else if (statusCode === -3) {
+            message.channel.send(messages.SERVER_ALREADY_SET_UP);
+          } else {
+            message.channel.send(messages.GENERIC_ERROR);
+          }
+        });
+      }
+      botUtils.initializeBotSetUp();
     }
   }
 });
@@ -335,6 +368,14 @@ function hasUserTypedPronosChannel(message) {
     message.channel.id === botSetUp.channelFromCommandHasBeenCalled.id &&
     botUtils.getChannelByIdAndServer(channelId, botSetUp.server) &&
     botSetUp.user.id === message.author.id
+  );
+}
+
+function hasUserTypedCommand(message) {
+  return (
+    Object.keys(botUtils.OPTIONAL_COMMANDS).includes(
+      message.content.split(" ")[0]
+    ) && message.content.split(" ")[1]
   );
 }
 
@@ -476,6 +517,10 @@ async function handleAddSummonerCommand(params, message) {
         }
       });
   }
+}
+
+function hasUserTypedStopMessage(message) {
+  return message.content === messages.STOP_MESSAGE;
 }
 
 async function handleLeaderboardCommand(number, message) {
