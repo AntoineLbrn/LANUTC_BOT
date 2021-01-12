@@ -122,6 +122,7 @@ async function addPronostiqueur(user, server) {
   let i = 3;
   while (
     IDsSheets.rowData[i] &&
+    IDsSheets.rowData[i].values &&
     IDsSheets.rowData[i].values[apiGoogleUtils.USER_SHEET.IDS_INDEX] &&
     IDsSheets.rowData[i].values[apiGoogleUtils.USER_SHEET.IDS_INDEX]
       .formattedValue
