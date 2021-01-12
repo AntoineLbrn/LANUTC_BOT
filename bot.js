@@ -51,14 +51,14 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
           );
           break;
         // !statisticsBO5
-        case botUtils.COMMANDS.STATISTICS_BO5:
+        case botCommands.commands.STATISTICS_BO5:
           message.channel.send(
             messages.STATISTICS_OF_THE_DAY +
               (await pronos.getStatisticsOfCurrentDayBO5())
           );
           break;
         // !pronosBO1
-        case botUtils.COMMANDS.PRONOS_BO1: {
+        case botCommands.commands.PRONOS_BO1: {
           message.channel.send(messages.HEADER_PRONO);
           await pronos.getMatchesOfTheDay().then((matches) => {
             printBO1(matches, message);
@@ -66,7 +66,7 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
           break;
         }
         //pronosBO5
-        case botUtils.COMMANDS.PRONOS_BO5: {
+        case botCommands.commands.PRONOS_BO5: {
           message.channel.send(messages.HEADER_PRONO_PLAYOFF);
           await pronos.getMatchesOfTheDay().then((BO5matches) => {
             printBO5(BO5matches, message);
@@ -77,23 +77,23 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
     }
     switch (params[0]) {
       //!eloLeaderboard [N]
-      case botUtils.COMMANDS.ELO_LEADERBOARD: {
+      case botCommands.commands.ELO_LEADERBOARD: {
         handleLeaderboardCommand(params[1], message);
         break;
       }
       //!subscribeSummoner [name]
-      case botUtils.COMMANDS.ADD_SUMMONER: {
+      case botCommands.commands.ADD_SUMMONER: {
         handleAddSummonerCommand(params, message);
         break;
       }
       //!elo [name]
-      case botUtils.COMMANDS.ELO: {
+      case botCommands.commands.ELO: {
         handleEloCommand(params, message);
         break;
       }
       //leagueStats.getElo(message.author)
       //!leaderboard [N]
-      case botUtils.COMMANDS.LEADERBOARD:
+      case botCommands.commands.LEADERBOARD:
         message.channel.send(await pronos.getLeaderboard(params));
         break;
       //!help
@@ -103,7 +103,7 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
         );
         break;
       //!unsubscribe
-      case botUtils.COMMANDS.UNSUBSCRIBE:
+      case botCommands.commands.UNSUBSCRIBE:
         await pronos.unsubscribeUser(message.author).then((response) => {
           if (response > 0) {
             const server = botUtils.getServerById(response, bot.guilds);
@@ -131,7 +131,7 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
         });
         break;
       //!rank
-      case botUtils.COMMANDS.RANK:
+      case botCommands.commands.RANK:
         pronos.getRank(message.author).then((rank) => {
           let username;
           let user;
