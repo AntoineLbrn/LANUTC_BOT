@@ -28,24 +28,23 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
       botUtils.isNotDirectMessage(message) &&
       botUtils.isMemberAdministrator(message.member)
     ) {
-      console.log(botCommands);
       switch (cmd) {
         // !setupCommands
         case botCommands.commands.SETUP_COMMANDS:
           botSetUp = botUtils.setupCommandsStep1(message, botCommands);
           break;
         // !setupBot
-        case botUtils.COMMANDS.SETUP_BOT:
+        case botCommands.commands.SETUP_BOT:
           botSetUp = botUtils.setupBotStep1(message, botSetUp);
           break;
         // !setupSubscription
-        case botUtils.COMMANDS.SETUP_SUBSCRIPTION:
+        case botCommands.commands.SETUP_SUBSCRIPTION:
           message.channel
             .send(messages.SETUP_SUBSCRIPTION)
             .then((message) => message.react(botUtils.REACTIONS.VALIDATE));
           break;
         // !statistics
-        case botUtils.COMMANDS.STATISTICS:
+        case botCommands.commands.STATISTICS:
           message.channel.send(
             messages.STATISTICS_OF_THE_DAY +
               (await pronos.getStatisticsOfCurrentDay())
@@ -99,7 +98,9 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
         break;
       //!help
       case botUtils.COMMANDS.HELP:
-        message.channel.send(messages.HELP_MESSAGE);
+        message.channel.send(
+          "Commands : \n\n" + botUtils.botCommandsAsString(botCommands.commands)
+        );
         break;
       //!unsubscribe
       case botUtils.COMMANDS.UNSUBSCRIBE:
@@ -155,7 +156,10 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
         });
         break;
       default: {
-        const nearestCommand = botUtils.getNearestCommand(cmd);
+        const nearestCommand = botUtils.getNearestCommand(
+          cmd,
+          botCommands.commands
+        );
         if (cmd !== nearestCommand) {
           message.channel.send(
             message.author.toString() +

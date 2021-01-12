@@ -4,6 +4,7 @@ const apiGoogle = require("../src/apiGoogle");
 const apiGoogleUtils = require("./apiGoogleUtils");
 
 const OPTIONAL_COMMANDS = {
+  SETUP_BOT: "setupBot",
   SETUP_SUBSCRIPTION: "setupSubscription",
   STATISTICS: "statistics",
   STATISTICS_BO5: "statisticsBO5",
@@ -84,17 +85,33 @@ module.exports = {
   setupCommandsStep1: setupCommandsStep1,
   addCommand: addCommand,
   retrieveBotCommands: retrieveBotCommands,
+  botCommandsAsString: botCommandsAsString,
 };
 
 const levenshtein = require("js-levenshtein");
 
-function getNearestCommand(cmd) {
+function botCommandsAsString(commands) {
+  let s = "";
+  Object.keys(commands).forEach(function (key) {
+    console.log(key);
+    s += key + " : " + commands[key] + "\n";
+  });
+  return s;
+}
+
+function getNearestCommand(cmd, botCommands) {
   let min = 20;
   let nearestCommand = this.COMMANDS.SETUP_SUBSCRIPTION;
   for (let i in this.COMMANDS) {
     if (min > levenshtein(cmd, this.COMMANDS[i])) {
       nearestCommand = this.COMMANDS[i];
       min = levenshtein(cmd, this.COMMANDS[i]);
+    }
+  }
+  for (let i in botCommands) {
+    if (min > levenshtein(cmd, botCommands[i])) {
+      nearestCommand = botCommands[i];
+      min = levenshtein(cmd, botCommands[i]);
     }
   }
   return nearestCommand;
@@ -225,6 +242,7 @@ async function retrieveBotCommands(botCommands) {
 function initializeBotCommands() {
   return {
     isWaitingForCommand: false,
+    // you have to have "setup_commands" on google sheet.
     commands: {},
   };
 }
@@ -281,10 +299,15 @@ function isMemberAdministrator(member) {
   return member.hasPermission(this.PERMISSIONS.ADMINISTRATOR);
 }
 
-function getCommandsList() {
+function getCommandsList(alreadyBoundCommands) {
   return Object.keys(OPTIONAL_COMMANDS)
     .map(function (k) {
       return k;
+    })
+    .filter((k) => {
+      if (!alreadyBoundCommands[k]) {
+        return k;
+      }
     })
     .join(", ");
 }
@@ -295,7 +318,9 @@ function addCommand(botCommands, message) {
 
 function setupCommandsStep1(message, botCommands) {
   botCommands.isWaitingForCommand = true;
-  message.channel.send(messages.SETUP_COMMANDS_1 + getCommandsList());
+  message.channel.send(
+    messages.SETUP_COMMANDS_1 + getCommandsList(botCommands.commands)
+  );
   return botCommands;
 }
 
