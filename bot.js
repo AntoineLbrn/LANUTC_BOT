@@ -155,7 +155,9 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
           });
         });
         break;
-      default: {
+      //TODO: dé-commenter quand une solution aura été trouvée
+      /*default:
+        {
         const nearestCommand = botUtils.getNearestCommand(
           cmd,
           botCommands.commands
@@ -170,7 +172,7 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
               "**"
           );
         }
-      }
+      }*/
     }
   } else {
     if (botSetUp.isWaitingForChannel && hasUserTypedPronosChannel(message)) {
