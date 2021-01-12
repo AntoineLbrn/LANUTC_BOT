@@ -10,7 +10,36 @@ module.exports = {
   unsubscribeUser: unsubscribeUser,
   sendSettings: sendSettings,
   sendSummonerName: sendSummonerName,
+  sendCommandList: sendCommandList,
 };
+
+async function sendCommandList(commands) {
+  await getToken();
+  let result = true;
+  let i = apiGoogleUtils.SETTINGS_SHEET.FIRST_COMMAND_INDEX;
+  for (const k in commands) {
+    result &=
+      (await updateCell(
+        apiGoogleUtils.SETTINGS_SHEET.ID,
+        apiGoogleUtils.SETTINGS_SHEET.COMMAND_ID_INDEX,
+        i,
+        k
+      )) === 0
+        ? 0
+        : -2;
+    result &=
+      (await updateCell(
+        apiGoogleUtils.SETTINGS_SHEET.ID,
+        apiGoogleUtils.SETTINGS_SHEET.COMMAND_ALIAS_INDEX,
+        i,
+        commands[k]
+      )) === 0
+        ? 0
+        : -2;
+    i++;
+  }
+  return result;
+}
 
 async function sendSummonerName(summonerName, row, column) {
   await getToken();

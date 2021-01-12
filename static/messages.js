@@ -21,17 +21,6 @@ module.exports = {
   UNSUBSCRIBED: "Tu as été désinscrit.e des pronostics !",
   BOT_ACTIVITY: "!help pour la liste des commandes 😎",
   NO_USERS_TO_PING: "no users to ping today",
-  HELP_MESSAGE:
-    "*Voici les commandes à votre disposition (n'oubliez pas le !)*\n\n" +
-    "**leaderboard [N]** : Affiche un classement des N premiers pronostiqueurs. \n" +
-    "**help** : Affiche toutes les commandes disponibles. \n" +
-    "**unsubscribe** : Vous désinscrit des pronostics, pour ne plus être tag. \n" +
-    "**rank** : Affiche votre classement de pronostiqueur.\n" +
-    "**elo [nom d'invocateur]** : Affiche le elo de l'invocateur.\n" +
-    "**elo [@utilisateur]** : Affiche le elo de l'utilisateur discord.\n" +
-    "**elo** : Affiche votre elo\n" +
-    "**addSummoner** : Ajoute un compte LoL à votre identité discord\n" +
-    "**eloLeaderboard [N]** : Affiche les N utilisateurs les mieux classés du serveur\n",
   SERVER_ALREADY_SET_UP: "Ce serveur est déjà configuré.",
   SETUP_BOT_1:
     "**Bienvenue dans l'interface de configuration du bot** \n\n" +
@@ -52,4 +41,14 @@ module.exports = {
   SUMMONER_DOES_NOT_EXIST: " ce joueur n'existe pas.",
   SUMMONER_NAME_ADDED: "Nom d'invocateur ajouté !",
   WRONG_COMMAND: "Commande non reconnue. Peut être vouliez-vous dire",
+  BOT_HAS_NO_PERMISSIONS:
+    "Les permissions n'ont pas pu être éditées, êtes vous certain d'avoir donné les droits d'administration ?",
+  SETUP_COMMANDS_1:
+    "**Bienvenue dans l'interface de gestion des commandes.**\n" +
+    "Pour ajouter une commande et son alias, tapez [NOM_COMMANDE] [alias].\n" +
+    "Si une commande n'est pas ajoutée, elle ne sera pas utilisable.\n" +
+    "Pour valider l'ajout de commande, tapez stop\n\n",
+  COMMAND_ADDED: "**Commande ajoutée**",
+  STOP_MESSAGE: "stop",
+  COMMAND_CONFIGURATION_END: "Configuration terminée",
 };

@@ -16,6 +16,13 @@ module.exports = {
     IS_ACTIVE_CODE: "1",
     IS_INACTIVE_CODE: "0",
   },
+  SETTINGS_SHEET: {
+    INDEX: 4,
+    ID: 74604376,
+    COMMAND_ID_INDEX: 0,
+    COMMAND_ALIAS_INDEX: 1,
+    FIRST_COMMAND_INDEX: 2,
+  },
   SERVER_SHEET: {
     ID: 1216820103,
     INDEX: 2,
