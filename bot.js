@@ -30,7 +30,7 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
     ) {
       switch (cmd) {
         // !setupCommands
-        case botCommands.commands.SETUP_COMMANDS:
+        case botUtils.COMMANDS.SETUP_COMMANDS:
           botSetUp = botUtils.setupCommandsStep1(message, botCommands);
           break;
         // !setupBot
