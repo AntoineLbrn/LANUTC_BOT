@@ -355,8 +355,7 @@ async function addBO1Prono(tomorrow, match, winner, user) {
   const sheet = await apiGoogle.getSheet();
   const matchColumn = getMatchColumn(sheet, tomorrow, match);
   const playerRow = await apiGoogleUtils.getUserRow(sheet, user);
-
-  return apiGoogle.sendProno(matchColumn + winner - 1, playerRow, 1, sheet);
+  return apiGoogle.sendProno(matchColumn, playerRow, 1, sheet);
 }
 
 async function getMatchesByDate(date) {
