@@ -167,7 +167,7 @@ async function sendPronostiqueur(user, row, server) {
     : -2;
 }
 
-async function sendProno(column, row, value, sheet) {
+async function sendProno(column, row, value, sheet, winnerIsSecondTeam) {
   if (row === -3) {
     return -3;
   }
@@ -180,8 +180,8 @@ async function sendProno(column, row, value, sheet) {
       {
         repeatCell: {
           range: {
-            startColumnIndex: column,
-            endColumnIndex: column + 1,
+            startColumnIndex: column + winnerIsSecondTeam,
+            endColumnIndex: column + winnerIsSecondTeam + 1,
             startRowIndex: row,
             endRowIndex: row + 1,
             sheetId: 0,
