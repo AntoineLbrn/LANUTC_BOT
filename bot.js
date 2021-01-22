@@ -203,7 +203,7 @@ bot.on(botUtils.RECEIVE_MESSAGE_CODE, async (message) => {
   }
 });
 
-bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, (reaction, user) => {
+bot.on(botUtils.MESSAGE_REACTION_ADD_CODE, async (reaction, user) => {
   const message = reaction.message;
   const emoji = reaction.emoji;
   if (!user.bot && botUtils.isBotMessageAuthor(message)) {
